@@ -13,6 +13,7 @@ export const compat = [
 
 export const packs = [
   {
+    id: 'design',
     kind: 'Design',
     name: 'Design Pack',
     desc: 'Para designers gráficos e social media.',
@@ -30,6 +31,7 @@ export const packs = [
     ],
   },
   {
+    id: 'bundle',
     kind: 'Design + Vídeo + Motion',
     name: 'Bundle Completo',
     desc: 'Todo o catálogo, com desconto e updates vitalícios.',
@@ -48,6 +50,7 @@ export const packs = [
     ],
   },
   {
+    id: 'motion',
     kind: 'Vídeo + Motion',
     name: 'Motion Pack',
     desc: 'Para editores de vídeo e motion designers.',

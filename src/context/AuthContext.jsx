@@ -87,6 +87,25 @@ export function AuthProvider({ children }) {
     [user, setLibrary],
   )
 
+  // ── Apenas para o modo desenvolvedor (testar bloqueio/desbloqueio) ──
+  // Revoga um pack pago (volta a ficar bloqueado). Packs grátis não saem.
+  const revoke = useCallback(
+    (id) => {
+      if (!user || byId(id)?.free) return
+      setLibrary((prev) => {
+        const cur = prev[user.email] || emptyLib()
+        return { ...prev, [user.email]: { ...cur, owned: cur.owned.filter((x) => x !== id) } }
+      })
+    },
+    [user, setLibrary],
+  )
+
+  // Zera a biblioteca da conta atual (mantém só os packs grátis).
+  const resetLibrary = useCallback(() => {
+    if (!user) return
+    setLibrary((prev) => ({ ...prev, [user.email]: emptyLib() }))
+  }, [user, setLibrary])
+
   const value = {
     user,
     signUp,
@@ -94,8 +113,11 @@ export function AuthProvider({ children }) {
     logout,
     ownsPack,
     purchase,
+    revoke,
+    resetLibrary,
     recordDownload,
     downloads: lib.downloads,
+    owned: lib.owned,
     ownedCount: lib.owned.length,
     totalDownloads: Object.values(lib.downloads).reduce((a, b) => a + b, 0),
   }

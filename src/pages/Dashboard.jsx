@@ -1,4 +1,5 @@
 import { motion, useReducedMotion } from 'framer-motion'
+import { Link } from 'react-router-dom'
 import DashboardHeader from '../components/DashboardHeader'
 import AssetCard from '../components/AssetCard'
 import Eyebrow from '../components/Eyebrow'
@@ -77,10 +78,16 @@ function FeaturedPack({ pack }) {
             <Button as="button" onClick={handleDownload}>
               Baixar pack ↓
             </Button>
+            <Link
+              to={`/pack/${pack.id}`}
+              className="font-util text-[12px] font-semibold uppercase tracking-[0.14em] text-ash transition-colors hover:text-bone"
+            >
+              Ver detalhes →
+            </Link>
             <span className="font-util text-[11px] uppercase tracking-[0.14em] text-faint">
               {count > 0
                 ? `${count} ${count === 1 ? 'download' : 'downloads'}`
-                : 'PNG + PSD · grátis na sua conta'}
+                : 'PNG + JPEG · grátis na sua conta'}
             </span>
           </div>
         </div>
@@ -162,9 +169,10 @@ export default function Dashboard() {
         </div>
 
         {/* persistence note */}
-        <p className="mt-12 max-w-[60ch] text-[12px] leading-relaxed text-faint">
-          As compras são simuladas (sem cobrança real) e sua conta, biblioteca e downloads ficam
-          salvos apenas neste navegador, via armazenamento local. Limpar os dados do site zera tudo.
+        <p className="mt-12 max-w-[64ch] text-[12px] leading-relaxed text-faint">
+          O pagamento dos packs é feito pelo Mercado Pago. Depois da compra aprovada, o pack
+          desbloqueia na sua conta e o download fica liberado. Sua conta, biblioteca e downloads
+          ficam salvos neste navegador (armazenamento local) — limpar os dados do site zera tudo.
         </p>
       </main>
     </>

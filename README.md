@@ -3,7 +3,7 @@
 Marketplace de packs de assets para criadores — **React + Vite + Tailwind CSS + Framer Motion**.
 Tema: pôster escuro, tipografia *blackletter* (Grenze Gotisch), grão de filme, vazamentos de luz e vermelho-sangue como acento.
 
-Agora com **landing page + login + dashboard** e botões de download dos assets. **Sem back-end**: contas, sessão e biblioteca ficam salvas no navegador via `localStorage`.
+**Landing page + login + dashboard + página de detalhes por pack.** Os downloads ficam **bloqueados até a compra**. Pagamento via **Mercado Pago (links de pagamento)**. **Sem back-end**: contas, sessão e biblioteca ficam no navegador via `localStorage`.
 
 ## Rodando
 
@@ -18,7 +18,9 @@ npm run preview  # serve a build localmente
 
 ## Páginas / rotas
 
-- `/` — landing page (os CTAs de compra levam ao login).
+- `/` — landing page (os CTAs de compra levam à página do pack).
+- `/pack/:id` — **detalhes do pack**: galeria, o que vem dentro, e o botão de **download (bloqueado até comprar)** ou **Comprar** via Mercado Pago. Pública.
+- `/compra/retorno` — página de **retorno do Mercado Pago**: lê o status do pagamento e libera o pack. Pública.
 - `/login` — entrar **ou** criar conta (mesmo formulário, com abas).
 - `/dashboard` — biblioteca do usuário (rota protegida; sem sessão, redireciona pro login).
 
@@ -31,50 +33,107 @@ e-mail:  demo@culto.com
 senha:   culto123
 ```
 
-Na tela de login há um botão **"Preencher automaticamente"**. Contas novas (cadastro) começam só com o pack gratuito e desbloqueiam o resto.
+Contas novas (cadastro) começam só com o pack gratuito e desbloqueiam o resto comprando.
 
-## "Persist storage" (sem back-end)
+---
 
-Toda a persistência usa `localStorage` através do hook `src/lib/useLocalStorage.js`, exposto pelo `AuthContext`:
+## 💳 Mercado Pago (configurar depois — só colar os links)
+
+A estrutura já está pronta. Você só precisa criar os links e colá-los em **`src/data/payments.js`**.
+
+**1. Crie um link de pagamento** para cada pack pago no painel do Mercado Pago
+(*Seu negócio → Link de pagamento*, ou em **Checkout Pro**). Anote o link de cada um.
+
+**2. Cole os links** em `src/data/payments.js`:
+
+```js
+export const MP_PAYMENT_LINKS = {
+  design: 'https://mpago.la/SEU-LINK-DESIGN',
+  motion: 'https://mpago.la/SEU-LINK-MOTION',
+  bundle: 'https://mpago.la/SEU-LINK-BUNDLE',
+}
+```
+
+**3. Configure as "URLs de retorno" (`back_urls`)** de cada link para apontar para a página de retorno do site, **incluindo o id do pack** na query. Ex.:
+
+```
+https://SEU-SITE.com/compra/retorno?pack=design
+https://SEU-SITE.com/compra/retorno?pack=motion
+https://SEU-SITE.com/compra/retorno?pack=bundle
+```
+
+> Importante: ative o **retorno automático** ("voltar para o site") no link. Quando o Mercado Pago aprova o pagamento, ele manda o cliente de volta para `/compra/retorno`, que lê o status (`status=approved` / `collection_status=approved`) e o `pack` e **libera o download automaticamente** na conta logada.
+
+Enquanto um link estiver vazio, o botão **Comprar** mostra um aviso de "checkout em configuração" em vez de quebrar — então dá pra publicar antes de finalizar o Mercado Pago.
+
+---
+
+## 🛠️ Developer mode (testar o desbloqueio sem pagar)
+
+Serve pra você simular "o cliente comprou" e ver o download destravar.
+
+- Em **`npm run dev`** o painel já aparece sozinho (canto inferior direito).
+- Em **produção** ele fica escondido. Para abrir: acesse o site com **`?dev=1`** na URL (ex. `https://SEU-SITE.com/?dev=1`). Para esconder de novo: **`?dev=0`**.
+
+Com o dev mode **ligado** e uma conta logada, o painel deixa você:
+- **Liberar / Bloquear** cada pack pago (simula a compra/estorno e persiste);
+- **Resetar biblioteca** (volta a conta só com os packs gratuitos).
+
+Na própria página do pack (`/pack/:id`), com o dev mode ligado, aparece um botão **"Simular compra (desbloquear)"** pra testar o fluxo de download na hora.
+
+---
+
+## Persistência (sem back-end)
+
+Tudo via `localStorage` (hook `src/lib/useLocalStorage.js`), exposto pelo `AuthContext`:
 
 - `culto:users` — contas cadastradas.
 - `culto:session` — e-mail da sessão atual.
 - `culto:library` — por usuário: packs adquiridos (`owned`) e contagem de `downloads`.
+- `culto:devmode` / `culto:devpanel` — estado do developer mode.
+- `culto:pendingPurchase` — pack aguardando confirmação do Mercado Pago.
 
-O hook sincroniza entre abas (evento `storage`). As **compras são simuladas** (sem cobrança): *Desbloquear* só adiciona o pack à biblioteca e persiste. Limpar os dados do site zera tudo.
+> ⚠️ Por ser um site **estático**, o bloqueio de download é no nível da interface. O arquivo em `public/downloads/` é público se alguém souber a URL exata. Para proteção real seria preciso um back-end servindo o arquivo só após validar a compra (webhook do Mercado Pago). Para o uso atual (loja com checkout do MP), o fluxo de UI já entrega a experiência completa.
 
-## Downloads
+## Downloads e arquivos dos packs
 
-Cada pack aponta para um arquivo real em `public/downloads/*.zip`, então os botões **Baixar** funcionam offline. O **Kid's Learning — Space Pack** usa a imagem enviada (`public/assets/kids-learning.png`) como thumbnail e dentro do zip. Os outros packs trazem amostras geradas + licença.
+- **Kid's Learning — Space Pack** (gratuito): usa as imagens enviadas como galeria (`public/assets/kids-space-0*.jpg`) e o download real é **`public/downloads/kids-learning-pack.zip`** (as 4 artes em alta + licença).
+- **Packs pagos** (Design / Motion / Bundle): por enquanto o download aponta para o **mesmo zip de exemplo** (`kids-learning-pack.zip`), só como **placeholder**. Em `src/data/catalog.js` cada pack tem o campo `file` com um comentário **"TROCAR pelo arquivo real"** — é só colocar o zip definitivo em `public/downloads/` e atualizar o caminho.
 
-## Estrutura
+## Estrutura (principais novidades em **negrito**)
 
 ```
 src/
-├── main.jsx                # BrowserRouter + AuthProvider
-├── App.jsx                 # rotas (/, /login, /dashboard)
-├── context/AuthContext.jsx # login/cadastro/sessão + biblioteca (localStorage)
+├── main.jsx                  # BrowserRouter + AuthProvider + DevModeProvider
+├── App.jsx                   # rotas (+ /pack/:id, /compra/retorno) + <DevPanel/>
+├── context/
+│   ├── AuthContext.jsx       # login/cadastro/sessão + biblioteca (+ revoke, resetLibrary)
+│   └── DevModeContext.jsx    # estado global do developer mode
 ├── lib/
-│   ├── motion.js           # easing + variants do Framer Motion
-│   ├── useLocalStorage.js  # hook de persistência
-│   └── download.js         # disparo de download
+│   ├── checkout.js           # inicia o checkout do MP, lê o retorno
+│   ├── download.js           # disparo de download
+│   ├── motion.js             # easing + variants
+│   └── useLocalStorage.js    # hook de persistência
 ├── data/
-│   ├── content.js          # conteúdo da landing
-│   └── catalog.js          # packs do dashboard/loja
-├── pages/                  # Landing, Login, Dashboard
+│   ├── content.js            # conteúdo da landing
+│   ├── catalog.js            # packs (galeria, "o que vem dentro", arquivos)
+│   └── payments.js           # ← COLE AQUI OS LINKS DO MERCADO PAGO
+├── pages/
+│   ├── PackDetail.jsx        # página de detalhes + download bloqueado/comprar
+│   ├── CheckoutReturn.jsx    # retorno do Mercado Pago (libera o pack)
+│   └── ... (Landing, Login, Dashboard)
 └── components/
-    ├── Button.jsx          # polimórfico: <a> | <Link> | <button>
-    ├── Field.jsx           # input do formulário
-    ├── ProtectedRoute.jsx  # guarda da rota /dashboard
-    ├── AssetCard.jsx       # card de pack (download / desbloquear)
-    ├── PosterTile.jsx      # thumbnail de marca p/ packs sem foto
-    ├── DashboardHeader.jsx # topo do dashboard (usuário + sair)
-    └── ... (Navbar, Hero, Packs, Faq, Decor, Footer, etc.)
+    ├── DevPanel.jsx          # painel flutuante do developer mode
+    ├── StoreNav.jsx          # topo compacto das páginas de pack/retorno
+    ├── AssetCard.jsx         # card de pack (leva aos detalhes)
+    └── ... (Button, Packs, Footer, Decor, etc.)
 ```
 
 ## Deploy estático (SPA)
 
-Por usar rotas client-side, hosts estáticos precisam redirecionar tudo pro `index.html`:
+Rotas client-side: o host precisa redirecionar tudo pro `index.html`.
 - **Netlify**: incluso em `public/_redirects`.
 - **Vercel**: incluso em `vercel.json`.
 - `npm run preview` já faz esse *fallback* automaticamente.
+
+Depois de publicar, lembre de apontar as `back_urls` dos links do Mercado Pago para `https://SEU-SITE.com/compra/retorno?pack=<id>`.
