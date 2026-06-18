@@ -86,7 +86,7 @@ export default function Packs() {
                 ))}
               </ul>
 
-              <Button href="#" full variant={p.ctaVariant} className="mt-auto">
+              <Button to="/login" full variant={p.ctaVariant} className="mt-auto">
                 {p.cta}
               </Button>
             </motion.div>

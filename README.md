@@ -1,70 +1,80 @@
 # CULTO
 
-Landing page de packs de assets para criadores — reconstruída em **React + Vite + Tailwind CSS + Framer Motion**.
-
+Marketplace de packs de assets para criadores — **React + Vite + Tailwind CSS + Framer Motion**.
 Tema: pôster escuro, tipografia *blackletter* (Grenze Gotisch), grão de filme, vazamentos de luz e vermelho-sangue como acento.
 
-## Rodando o projeto
+Agora com **landing page + login + dashboard** e botões de download dos assets. **Sem back-end**: contas, sessão e biblioteca ficam salvas no navegador via `localStorage`.
+
+## Rodando
 
 Pré-requisito: **Node.js 18+**.
 
 ```bash
-npm install      # instala as dependências
-npm run dev      # ambiente de desenvolvimento (http://localhost:5173)
-npm run build    # gera a build de produção em /dist
-npm run preview  # serve a build de produção localmente
+npm install      # (ou: bun install)
+npm run dev      # http://localhost:5173
+npm run build    # build de produção em /dist
+npm run preview  # serve a build localmente
 ```
 
-## Stack
+## Páginas / rotas
 
-- **React 18** + **Vite 5** — base e bundler.
-- **Tailwind CSS 3.4** — estilização com tokens da marca (`tailwind.config.js`).
-- **Framer Motion 11** — animações.
+- `/` — landing page (os CTAs de compra levam ao login).
+- `/login` — entrar **ou** criar conta (mesmo formulário, com abas).
+- `/dashboard` — biblioteca do usuário (rota protegida; sem sessão, redireciona pro login).
 
-## Padrões de animação usados
+### Conta de demonstração
 
-- **Entrada orquestrada do hero** — eyebrow, título, lead, botões e métricas sobem em sequência no carregamento; uma barra vermelha faz *wipe* horizontal atrás da palavra (assinatura da página).
-- **Reveal no scroll** — `whileInView` + `viewport={{ once: true }}` substitui o `IntersectionObserver`; grids usam `staggerChildren` para revelar item a item.
-- **Micro-interações** — botões e cards reagem a `whileHover` / `whileTap`.
-- **Accordion do FAQ** — `AnimatePresence` anima a altura de `0 → auto` em vez do `<details>` nativo.
-- **Menu mobile** — abre/fecha com `AnimatePresence`.
-- **Atmosfera** — os vazamentos de luz "respiram" em loop com `repeat: Infinity`.
-- **Acessibilidade** — tudo respeita `prefers-reduced-motion` via o hook `useReducedMotion()`; foco visível e `scroll-behavior` desligado quando o usuário pede menos movimento.
+Já vem semeada e dona de **todos** os packs:
 
-Os *tokens* de animação (easing, durações e variants) ficam centralizados em `src/lib/motion.js`.
+```
+e-mail:  demo@culto.com
+senha:   culto123
+```
+
+Na tela de login há um botão **"Preencher automaticamente"**. Contas novas (cadastro) começam só com o pack gratuito e desbloqueiam o resto.
+
+## "Persist storage" (sem back-end)
+
+Toda a persistência usa `localStorage` através do hook `src/lib/useLocalStorage.js`, exposto pelo `AuthContext`:
+
+- `culto:users` — contas cadastradas.
+- `culto:session` — e-mail da sessão atual.
+- `culto:library` — por usuário: packs adquiridos (`owned`) e contagem de `downloads`.
+
+O hook sincroniza entre abas (evento `storage`). As **compras são simuladas** (sem cobrança): *Desbloquear* só adiciona o pack à biblioteca e persiste. Limpar os dados do site zera tudo.
+
+## Downloads
+
+Cada pack aponta para um arquivo real em `public/downloads/*.zip`, então os botões **Baixar** funcionam offline. O **Kid's Learning — Space Pack** usa a imagem enviada (`public/assets/kids-learning.png`) como thumbnail e dentro do zip. Os outros packs trazem amostras geradas + licença.
 
 ## Estrutura
 
 ```
 src/
-├── App.jsx                 # compõe as seções
-├── main.jsx                # ponto de entrada
-├── index.css               # base do Tailwind + texturas (grão, halftone)
+├── main.jsx                # BrowserRouter + AuthProvider
+├── App.jsx                 # rotas (/, /login, /dashboard)
+├── context/AuthContext.jsx # login/cadastro/sessão + biblioteca (localStorage)
 ├── lib/
-│   └── motion.js           # easing + variants compartilhados
+│   ├── motion.js           # easing + variants do Framer Motion
+│   ├── useLocalStorage.js  # hook de persistência
+│   └── download.js         # disparo de download
 ├── data/
-│   └── content.js          # todo o conteúdo (packs, depoimentos, FAQ...)
+│   ├── content.js          # conteúdo da landing
+│   └── catalog.js          # packs do dashboard/loja
+├── pages/                  # Landing, Login, Dashboard
 └── components/
-    ├── Decor.jsx           # Grain, Halftone, Rays, Burst
-    ├── Reveal.jsx          # wrapper de reveal no scroll
-    ├── Eyebrow.jsx
-    ├── Button.jsx
-    ├── Logo.jsx
-    ├── Navbar.jsx
-    ├── Hero.jsx
-    ├── Compat.jsx
-    ├── SectionHead.jsx
-    ├── Inside.jsx
-    ├── Packs.jsx
-    ├── Steps.jsx
-    ├── Voices.jsx
-    ├── Faq.jsx
-    ├── FinalCta.jsx
-    └── Footer.jsx
+    ├── Button.jsx          # polimórfico: <a> | <Link> | <button>
+    ├── Field.jsx           # input do formulário
+    ├── ProtectedRoute.jsx  # guarda da rota /dashboard
+    ├── AssetCard.jsx       # card de pack (download / desbloquear)
+    ├── PosterTile.jsx      # thumbnail de marca p/ packs sem foto
+    ├── DashboardHeader.jsx # topo do dashboard (usuário + sair)
+    └── ... (Navbar, Hero, Packs, Faq, Decor, Footer, etc.)
 ```
 
-## Editando o conteúdo
+## Deploy estático (SPA)
 
-Quase todo o texto (packs, preços, depoimentos, FAQ, links do rodapé) vive em `src/data/content.js`. As categorias do "O que vem dentro" (com os ícones SVG) ficam em `src/components/Inside.jsx`.
-
-As cores e fontes da marca estão em `tailwind.config.js` — mude ali para retematizar a página inteira.
+Por usar rotas client-side, hosts estáticos precisam redirecionar tudo pro `index.html`:
+- **Netlify**: incluso em `public/_redirects`.
+- **Vercel**: incluso em `vercel.json`.
+- `npm run preview` já faz esse *fallback* automaticamente.

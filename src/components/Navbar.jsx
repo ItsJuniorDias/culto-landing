@@ -1,17 +1,25 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { AnimatePresence, motion, useMotionValueEvent, useScroll } from 'framer-motion'
 import Logo from './Logo'
 import Button from './Button'
 import { navLinks } from '../data/content'
+import { useAuth } from '../context/AuthContext'
 import { EASE } from '../lib/motion'
+
+const enterLinkCls =
+  'font-util text-[13px] font-medium uppercase tracking-[0.14em] text-ash transition-colors hover:text-bone'
 
 export default function Navbar() {
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const { user } = useAuth()
   const { scrollY } = useScroll()
 
   // Deepen the bar's background once the hero starts to scroll away.
   useMotionValueEvent(scrollY, 'change', (y) => setScrolled(y > 12))
+
+  const close = () => setOpen(false)
 
   return (
     <header
@@ -20,7 +28,7 @@ export default function Navbar() {
       }`}
     >
       <div className="mx-auto flex h-[70px] max-w-wrap items-center justify-between px-6">
-        <Logo />
+        <Logo to="/" />
 
         <nav className="hidden items-center gap-8 md:flex">
           {navLinks.map((l) => (
@@ -35,9 +43,20 @@ export default function Navbar() {
         </nav>
 
         <div className="flex items-center gap-3.5">
-          <Button href="#packs" className="hidden sm:inline-flex">
-            Ver packs
-          </Button>
+          {user ? (
+            <Button to="/dashboard" className="hidden sm:inline-flex">
+              Dashboard
+            </Button>
+          ) : (
+            <>
+              <Link to="/login" className={`hidden sm:inline ${enterLinkCls}`}>
+                Entrar
+              </Link>
+              <Button href="#packs" className="hidden sm:inline-flex">
+                Ver packs
+              </Button>
+            </>
+          )}
           <button
             type="button"
             aria-label={open ? 'Fechar menu' : 'Abrir menu'}
@@ -66,15 +85,26 @@ export default function Navbar() {
                 <a
                   key={l.label}
                   href={l.href}
-                  onClick={() => setOpen(false)}
+                  onClick={close}
                   className="font-util text-sm font-medium uppercase tracking-[0.14em] text-ash transition-colors hover:text-bone"
                 >
                   {l.label}
                 </a>
               ))}
-              <Button href="#packs" full onClick={() => setOpen(false)}>
-                Ver packs
-              </Button>
+              {user ? (
+                <Button to="/dashboard" full onClick={close}>
+                  Dashboard
+                </Button>
+              ) : (
+                <>
+                  <Link to="/login" onClick={close} className={enterLinkCls}>
+                    Entrar
+                  </Link>
+                  <Button href="#packs" full onClick={close}>
+                    Ver packs
+                  </Button>
+                </>
+              )}
             </div>
           </motion.nav>
         )}

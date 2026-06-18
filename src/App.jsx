@@ -1,31 +1,27 @@
+import { Routes, Route, Navigate } from 'react-router-dom'
 import { Grain } from './components/Decor'
-import Navbar from './components/Navbar'
-import Hero from './components/Hero'
-import Compat from './components/Compat'
-import Inside from './components/Inside'
-import Packs from './components/Packs'
-import Steps from './components/Steps'
-import Voices from './components/Voices'
-import Faq from './components/Faq'
-import FinalCta from './components/FinalCta'
-import Footer from './components/Footer'
+import Landing from './pages/Landing'
+import Login from './pages/Login'
+import Dashboard from './pages/Dashboard'
+import ProtectedRoute from './components/ProtectedRoute'
 
 export default function App() {
   return (
     <>
       <Grain />
-      <Navbar />
-      <main>
-        <Hero />
-        <Compat />
-        <Inside />
-        <Packs />
-        <Steps />
-        <Voices />
-        <Faq />
-        <FinalCta />
-      </main>
-      <Footer />
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/login" element={<Login />} />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </>
   )
 }

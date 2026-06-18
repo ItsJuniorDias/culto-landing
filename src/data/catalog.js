@@ -1,0 +1,71 @@
+// The asset packs shown in the dashboard. Each maps to a real downloadable
+// file in /public/downloads, so the download buttons actually work offline.
+
+export const catalog = [
+  {
+    id: 'kids-space',
+    title: "Kid's Learning — Space Pack",
+    kind: 'Kit de marketing do app',
+    desc: 'Key art principal, pôster e capa de loja do app infantil. Tema espacial com os mascotes em alta resolução, prontos pra publicar.',
+    format: 'PNG + PSD',
+    spec: '1237 × 2200 · 300 dpi',
+    size: '2,9 MB',
+    items: 3,
+    badges: ['PNG', 'PSD', 'Key art'],
+    thumb: '/assets/kids-learning.png',
+    file: '/downloads/kids-learning-space-pack.zip',
+    fileName: 'kids-learning-space-pack.zip',
+    free: true,
+    price: 'Grátis',
+  },
+  {
+    id: 'design',
+    title: 'Design Pack',
+    kind: 'Mockups · fontes · ícones',
+    desc: '150 mockups editáveis em PSD, 80 fontes com licença comercial, 300 ícones e 120 templates de redes.',
+    format: 'PSD · OTF · SVG',
+    spec: '650+ arquivos',
+    size: '38 MB',
+    items: 650,
+    badges: ['PSD', 'OTF', 'SVG'],
+    file: '/downloads/design-pack.zip',
+    fileName: 'design-pack.zip',
+    free: false,
+    price: 'R$ 197',
+  },
+  {
+    id: 'motion',
+    title: 'Motion Pack',
+    kind: 'Transições · LUTs · SFX',
+    desc: '120 transições, 90 LUTs de color grading, 200 SFX e 60 lower thirds para AE, Premiere e Resolve.',
+    format: 'MOGRT · CUBE · WAV',
+    spec: '470+ arquivos',
+    size: '120 MB',
+    items: 470,
+    badges: ['MOGRT', 'CUBE', 'WAV'],
+    file: '/downloads/motion-pack.zip',
+    fileName: 'motion-pack.zip',
+    free: false,
+    price: 'R$ 247',
+  },
+  {
+    id: 'bundle',
+    title: 'Bundle Completo',
+    kind: 'Tudo do catálogo',
+    desc: 'Todos os 2.300+ assets de design, vídeo e motion, com atualizações vitalícias e acesso à comunidade.',
+    format: 'Tudo incluso',
+    spec: '2.300+ arquivos',
+    size: '1,4 GB',
+    items: 2300,
+    badges: ['Design', 'Motion', 'Updates'],
+    file: '/downloads/bundle-completo.zip',
+    fileName: 'bundle-completo.zip',
+    free: false,
+    price: 'R$ 397',
+    featured: true,
+  },
+]
+
+export const byId = (id) => catalog.find((p) => p.id === id)
+export const ALL_PACK_IDS = catalog.map((p) => p.id)
+export const FREE_PACK_IDS = catalog.filter((p) => p.free).map((p) => p.id)
