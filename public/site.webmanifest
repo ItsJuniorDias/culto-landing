@@ -1,0 +1,23 @@
+{
+  "name": "CULTO — Packs de assets",
+  "short_name": "Culto",
+  "description": "Packs prontos de design, vídeo e motion para criadores.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#08080A",
+  "theme_color": "#08080A",
+  "icons": [
+    {
+      "src": "/web-app-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/web-app-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

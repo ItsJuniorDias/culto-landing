@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Culto">
+  <defs>
+    <radialGradient id="tile" cx="50%" cy="42%" r="62%">
+      <stop offset="0%" stop-color="#1c0a0b"/>
+      <stop offset="58%" stop-color="#100a0c"/>
+      <stop offset="100%" stop-color="#08080A"/>
+    </radialGradient>
+    <radialGradient id="bloom" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FF1A0E" stop-opacity="0.6"/>
+      <stop offset="60%" stop-color="#E10600" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#E10600" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- ink tile -->
+  <rect width="64" height="64" fill="url(#tile)"/>
+  <!-- red bloom behind the mark -->
+  <rect x="4" y="4" width="56" height="56" fill="url(#bloom)"/>
+  <!-- brand mark: the red square -->
+  <rect x="18.5" y="18.5" width="27" height="27" fill="#E10600"/>
+</svg>
