@@ -1,9 +1,10 @@
-import { motion, useReducedMotion } from 'framer-motion'
+import { motion, useScroll, useTransform } from 'framer-motion'
 import Eyebrow from './Eyebrow'
 import Button from './Button'
 import CountUp from './CountUp'
 import { Halftone, Rays, Burst } from './Decor'
 import { EASE, fadeUp } from '../lib/motion'
+import { useHeroParallax } from '../lib/useHeroParallax'
 
 // Each stat carries everything CountUp needs to render its final string,
 // so "2.300+", "18 mil" and "4,9★" animate while keeping their formatting.
@@ -24,8 +25,19 @@ const statsContainer = {
   },
 }
 
+// Sum helper for combining a pointer offset and a scroll offset on the same axis.
+const add = ([a, b]) => a + b
+
 export default function Hero() {
-  const reduce = useReducedMotion()
+  // Pointer / tilt tracking. px,py ≈ -0.5..0.5 from center; gx,gy = cursor px.
+  const { ref, px, py, gx, gy, glow, reduce } = useHeroParallax()
+
+  // Scroll progress across the hero: 0 at rest, 1 once it has scrolled fully
+  // out the top. Drives the cinematic "depth exit" as the section leaves.
+  const { scrollYProgress: sp } = useScroll({
+    target: ref,
+    offset: ['start start', 'end start'],
+  })
 
   // On-mount rise with a staggered delay. Returns {} under reduced motion.
   const rise = (delay) =>
@@ -37,93 +49,214 @@ export default function Hero() {
           transition: { duration: 0.6, ease: EASE, delay },
         }
 
+  // ── Depth planes ──────────────────────────────────────────────────────────
+  // Back planes drift OPPOSITE the cursor (you look past them); foreground
+  // planes drift WITH it (they float above). Larger range = closer to camera.
+
+  // Plane 1 — atmosphere (blooms + halftone): deepest, moves least, trails down.
+  const atmoX = useTransform(px, [-0.5, 0.5], [26, -26])
+  const atmoYp = useTransform(py, [-0.5, 0.5], [18, -18])
+  const atmoYs = useTransform(sp, [0, 1], [0, 90])
+  const atmoY = useTransform([atmoYp, atmoYs], add)
+  const atmoOpacity = useTransform(sp, [0, 0.85], [1, 0.3])
+
+  // Plane 2 — oversized "assets" outline word: drifts opposite, zooms through.
+  const wordX = useTransform(px, [-0.5, 0.5], [44, -44])
+  const wordYp = useTransform(py, [-0.5, 0.5], [26, -26])
+  const wordYs = useTransform(sp, [0, 1], [0, -170])
+  const wordY = useTransform([wordYp, wordYs], add)
+  const wordScale = useTransform(sp, [0, 1], [1, 1.18])
+  const wordOpacity = useTransform(sp, [0, 0.55], [1, 0])
+
+  // Plane 3 — corner engraving frame: foreground, floats with cursor + rotates.
+  const burstX = useTransform(px, [-0.5, 0.5], [-16, 16])
+  const burstYp = useTransform(py, [-0.5, 0.5], [-11, 11])
+  const burstYs = useTransform(sp, [0, 1], [0, 55])
+  const burstY = useTransform([burstYp, burstYs], add)
+  const burstRot = useTransform(px, [-0.5, 0.5], [-2.2, 2.2])
+  const burstOpacity = useTransform(sp, [0, 0.7], [1, 0])
+
+  // Plane 4 — title "Baixe & Crie": floats with cursor + tilts in 3D, lingers
+  // the longest as the hero dissolves so it's the last thing to leave.
+  const titleX = useTransform(px, [-0.5, 0.5], [-14, 14])
+  const titleYp = useTransform(py, [-0.5, 0.5], [-9, 9])
+  const titleYs = useTransform(sp, [0, 1], [0, -55])
+  const titleY = useTransform([titleYp, titleYs], add)
+  const titleRotY = useTransform(px, [-0.5, 0.5], [-7, 7])
+  const titleRotX = useTransform(py, [-0.5, 0.5], [6, -6])
+  const titleScale = useTransform(sp, [0, 1], [1, 0.9])
+  const titleOpacity = useTransform(sp, [0, 0.92], [1, 0])
+
+  // Plane 5 — supporting copy (eyebrow, paragraph, CTAs, stats): the nearest
+  // text plane, smallest drift so it stays comfortable to read and click.
+  const copyX = useTransform(px, [-0.5, 0.5], [-7, 7])
+  const copyYp = useTransform(py, [-0.5, 0.5], [-5, 5])
+  const copyYs = useTransform(sp, [0, 1], [0, -34])
+  const copyY = useTransform([copyYp, copyYs], add)
+  const copyOpacity = useTransform(sp, [0, 0.6], [1, 0])
+
+  // Cursor light: stronger near the top, fades as the hero scrolls away.
+  const glowOpacity = useTransform([glow, sp], ([g, p]) => g * Math.max(0, 1 - p * 1.4))
+
+  // Reusable style object for the supporting-copy plane.
+  const copyPlane = reduce ? undefined : { x: copyX, y: copyY, opacity: copyOpacity }
+
   return (
-    <section className="relative overflow-hidden border-b border-line bg-[radial-gradient(120%_90%_at_50%_18%,#19181d_0%,#08080A_62%)]">
-      <Halftone />
-      <Rays />
-      <Burst pos="tl" />
-      <Burst pos="tr" />
-      <Burst pos="bl" />
-      <Burst pos="br" />
+    <section
+      ref={ref}
+      className="relative overflow-hidden border-b border-line bg-[radial-gradient(120%_90%_at_50%_18%,#19181d_0%,#08080A_62%)]"
+    >
+      {/* Plane 1 — atmosphere */}
+      <motion.div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 z-0"
+        style={reduce ? undefined : { x: atmoX, y: atmoY, opacity: atmoOpacity }}
+      >
+        <Halftone />
+        <Rays />
+      </motion.div>
+
+      {/* Cursor light — a soft red bloom that tracks the pointer */}
+      {!reduce && (
+        <motion.div
+          aria-hidden="true"
+          className="pointer-events-none absolute left-0 top-0 z-[1] h-[760px] w-[760px] rounded-full blur-[80px] mix-blend-screen"
+          style={{
+            x: gx,
+            y: gy,
+            opacity: glowOpacity,
+            marginLeft: -380,
+            marginTop: -380,
+            background:
+              'radial-gradient(circle, rgba(225,6,0,.28) 0%, rgba(225,6,0,.10) 38%, transparent 70%)',
+          }}
+        />
+      )}
+
+      {/* Plane 3 — corner engraving frame */}
+      <motion.div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 z-[1]"
+        style={reduce ? undefined : { x: burstX, y: burstY, rotate: burstRot, opacity: burstOpacity }}
+      >
+        <Burst pos="tl" />
+        <Burst pos="tr" />
+        <Burst pos="bl" />
+        <Burst pos="br" />
+      </motion.div>
 
       <div className="relative z-[2] mx-auto max-w-[920px] px-6 pb-[84px] pt-[96px] text-center">
-        {/* Oversized outline word behind the title */}
-        <span
+        {/* Plane 2 — oversized outline word behind the title.
+            Outer node centers it; inner motion node carries the parallax so
+            the -50% centering isn't overwritten by the transform. */}
+        <div
           aria-hidden="true"
-          className="font-display absolute left-1/2 top-[4%] z-0 -translate-x-1/2 select-none whitespace-nowrap font-bold leading-[0.8] text-transparent [-webkit-text-stroke:1px_rgba(236,232,224,0.07)]"
-          style={{ fontSize: 'clamp(60px,16vw,190px)' }}
+          className="pointer-events-none absolute left-1/2 top-[4%] z-0 -translate-x-1/2"
         >
-          assets
-        </span>
+          <motion.div
+            style={reduce ? undefined : { x: wordX, y: wordY, scale: wordScale, opacity: wordOpacity }}
+          >
+            <span
+              className="font-display block select-none whitespace-nowrap font-bold leading-[0.8] text-transparent [-webkit-text-stroke:1px_rgba(236,232,224,0.07)]"
+              style={{ fontSize: 'clamp(60px,16vw,190px)' }}
+            >
+              assets
+            </span>
+          </motion.div>
+        </div>
 
-        <motion.div {...rise(0.1)} className="mb-[26px]">
-          <Eyebrow solo>2.300+ assets · licença comercial</Eyebrow>
+        {/* Plane 5 — eyebrow */}
+        <motion.div style={copyPlane} className="relative z-[2] mb-[26px]">
+          <motion.div {...rise(0.1)}>
+            <Eyebrow solo>2.300+ assets · licença comercial</Eyebrow>
+          </motion.div>
         </motion.div>
 
-        <h1
-          className="font-display relative z-[2] font-black leading-[0.86]"
-          style={{ fontSize: 'clamp(58px,14vw,150px)' }}
-        >
-          <motion.span {...rise(0.2)} className="block">
-            Baixe
-          </motion.span>
-          <motion.span {...rise(0.32)} className="block">
-            <span className="relative inline-block px-[0.12em] text-bone">
-              <motion.span
-                aria-hidden="true"
-                className="shadow-glow absolute inset-y-[14%] -inset-x-[2%] -z-10 bg-blood"
-                style={{ originX: 0, rotate: -1.5 }}
-                initial={reduce ? false : { scaleX: 0 }}
-                animate={reduce ? undefined : { scaleX: 1 }}
-                transition={{ duration: 0.7, ease: EASE, delay: 0.85 }}
-              />
-              &amp;
-            </span>{' '}
-            Crie
-          </motion.span>
-        </h1>
-
-        <motion.p
-          {...rise(0.45)}
-          className="relative z-[2] mx-auto mb-9 mt-[30px] max-w-[50ch] text-[18px] text-ash"
-        >
-          Packs prontos de design, vídeo e motion: LUTs, transições, mockups, fontes, SFX e
-          templates de After Effects. Você baixa, arrasta e entrega — sem perder horas garimpando
-          arquivo solto.
-        </motion.p>
-
+        {/* Plane 4 — title (3D-tilting plane) */}
         <motion.div
-          {...rise(0.55)}
-          className="relative z-[2] flex flex-wrap justify-center gap-3.5"
+          className="relative z-[2]"
+          style={
+            reduce
+              ? undefined
+              : {
+                  x: titleX,
+                  y: titleY,
+                  scale: titleScale,
+                  opacity: titleOpacity,
+                  rotateX: titleRotX,
+                  rotateY: titleRotY,
+                  transformPerspective: 1000,
+                }
+          }
         >
-          <Button href="#packs">Comprar agora ↗</Button>
-          <Button href="#inside" variant="ghost">
-            Ver o catálogo
-          </Button>
-        </motion.div>
-
-        <motion.div
-          className="relative z-[2] mt-[54px] flex flex-wrap justify-center gap-x-12 gap-y-8 border-t border-line pt-[34px]"
-          variants={reduce ? undefined : statsContainer}
-          initial={reduce ? false : 'hidden'}
-          animate={reduce ? undefined : 'show'}
-        >
-          {stats.map((s, i) => (
-            <motion.div key={s.lbl} variants={reduce ? undefined : fadeUp}>
-              <div className="font-display text-[40px] font-extrabold leading-none">
-                <CountUp
-                  to={s.to}
-                  decimals={s.decimals}
-                  separator={s.separator}
-                  suffix={s.suffix}
-                  delay={reduce ? 0 : 1.05 + i * 0.12}
+          <h1 className="font-display font-black leading-[0.86]" style={{ fontSize: 'clamp(58px,14vw,150px)' }}>
+            <motion.span {...rise(0.2)} className="block">
+              Baixe
+            </motion.span>
+            <motion.span {...rise(0.32)} className="block">
+              <span className="relative inline-block px-[0.12em] text-bone">
+                <motion.span
+                  aria-hidden="true"
+                  className="shadow-glow absolute inset-y-[14%] -inset-x-[2%] -z-10 bg-blood"
+                  style={{ originX: 0, rotate: -1.5 }}
+                  initial={reduce ? false : { scaleX: 0 }}
+                  animate={reduce ? undefined : { scaleX: 1 }}
+                  transition={{ duration: 0.7, ease: EASE, delay: 0.85 }}
                 />
-              </div>
-              <div className="font-util mt-2 text-[11px] uppercase tracking-[0.2em] text-faint">
-                {s.lbl}
-              </div>
-            </motion.div>
-          ))}
+                &amp;
+              </span>{' '}
+              Crie
+            </motion.span>
+          </h1>
+        </motion.div>
+
+        {/* Plane 5 — paragraph */}
+        <motion.div style={copyPlane} className="relative z-[2]">
+          <motion.p
+            {...rise(0.45)}
+            className="mx-auto mb-9 mt-[30px] max-w-[50ch] text-[18px] text-ash"
+          >
+            Packs prontos de design, vídeo e motion: LUTs, transições, mockups, fontes, SFX e
+            templates de After Effects. Você baixa, arrasta e entrega — sem perder horas garimpando
+            arquivo solto.
+          </motion.p>
+        </motion.div>
+
+        {/* Plane 5 — CTAs */}
+        <motion.div style={copyPlane} className="relative z-[2]">
+          <motion.div {...rise(0.55)} className="flex flex-wrap justify-center gap-3.5">
+            <Button href="#packs">Comprar agora ↗</Button>
+            <Button href="#inside" variant="ghost">
+              Ver o catálogo
+            </Button>
+          </motion.div>
+        </motion.div>
+
+        {/* Plane 5 — stats */}
+        <motion.div style={copyPlane} className="relative z-[2]">
+          <motion.div
+            className="mt-[54px] flex flex-wrap justify-center gap-x-12 gap-y-8 border-t border-line pt-[34px]"
+            variants={reduce ? undefined : statsContainer}
+            initial={reduce ? false : 'hidden'}
+            animate={reduce ? undefined : 'show'}
+          >
+            {stats.map((s, i) => (
+              <motion.div key={s.lbl} variants={reduce ? undefined : fadeUp}>
+                <div className="font-display text-[40px] font-extrabold leading-none">
+                  <CountUp
+                    to={s.to}
+                    decimals={s.decimals}
+                    separator={s.separator}
+                    suffix={s.suffix}
+                    delay={reduce ? 0 : 1.05 + i * 0.12}
+                  />
+                </div>
+                <div className="font-util mt-2 text-[11px] uppercase tracking-[0.2em] text-faint">
+                  {s.lbl}
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
         </motion.div>
       </div>
     </section>
