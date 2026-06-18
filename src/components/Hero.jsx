@@ -1,14 +1,28 @@
 import { motion, useReducedMotion } from 'framer-motion'
 import Eyebrow from './Eyebrow'
 import Button from './Button'
+import CountUp from './CountUp'
 import { Halftone, Rays, Burst } from './Decor'
-import { EASE } from '../lib/motion'
+import { EASE, fadeUp } from '../lib/motion'
 
+// Each stat carries everything CountUp needs to render its final string,
+// so "2.300+", "18 mil" and "4,9★" animate while keeping their formatting.
 const stats = [
-  { num: '2.300+', lbl: 'Assets prontos' },
-  { num: '18 mil', lbl: 'Criadores' },
-  { num: '4,9★', lbl: 'Nota média' },
+  { to: 2300, separator: '.', suffix: '+', lbl: 'Assets prontos' },
+  { to: 18, suffix: ' mil', lbl: 'Criadores' },
+  { to: 4.9, decimals: 1, suffix: '★', lbl: 'Nota média' },
 ]
+
+// Orchestrates the stats row: the block rises in, then each figure reveals
+// in sequence. Tuned to pick up where the rest of the hero load sequence ends.
+const statsContainer = {
+  hidden: { opacity: 0, y: 24 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: EASE, delay: 0.7, delayChildren: 0.9, staggerChildren: 0.12 },
+  },
+}
 
 export default function Hero() {
   const reduce = useReducedMotion()
@@ -89,16 +103,26 @@ export default function Hero() {
         </motion.div>
 
         <motion.div
-          {...rise(0.7)}
           className="relative z-[2] mt-[54px] flex flex-wrap justify-center gap-x-12 gap-y-8 border-t border-line pt-[34px]"
+          variants={reduce ? undefined : statsContainer}
+          initial={reduce ? false : 'hidden'}
+          animate={reduce ? undefined : 'show'}
         >
-          {stats.map((s) => (
-            <div key={s.lbl}>
-              <div className="font-display text-[40px] font-extrabold leading-none">{s.num}</div>
+          {stats.map((s, i) => (
+            <motion.div key={s.lbl} variants={reduce ? undefined : fadeUp}>
+              <div className="font-display text-[40px] font-extrabold leading-none">
+                <CountUp
+                  to={s.to}
+                  decimals={s.decimals}
+                  separator={s.separator}
+                  suffix={s.suffix}
+                  delay={reduce ? 0 : 1.05 + i * 0.12}
+                />
+              </div>
               <div className="font-util mt-2 text-[11px] uppercase tracking-[0.2em] text-faint">
                 {s.lbl}
               </div>
-            </div>
+            </motion.div>
           ))}
         </motion.div>
       </div>

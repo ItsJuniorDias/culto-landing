@@ -5,6 +5,7 @@ import AssetCard from '../components/AssetCard'
 import Eyebrow from '../components/Eyebrow'
 import Button from '../components/Button'
 import Reveal from '../components/Reveal'
+import CountUp from '../components/CountUp'
 import { useAuth } from '../context/AuthContext'
 import { catalog, byId } from '../data/catalog'
 import { downloadFile } from '../lib/download'
@@ -132,7 +133,13 @@ export default function Dashboard() {
           <div className="mt-7 flex flex-wrap gap-x-12 gap-y-6 border-y border-line py-6">
             {stats.map((s) => (
               <div key={s.lbl}>
-                <div className="font-display text-[34px] font-extrabold leading-none">{s.num}</div>
+                <div className="font-display text-[34px] font-extrabold leading-none">
+                  {typeof s.num === 'number' ? (
+                    <CountUp to={s.num} duration={1.1} />
+                  ) : (
+                    s.num
+                  )}
+                </div>
                 <div className="font-util mt-1.5 text-[11px] uppercase tracking-[0.2em] text-faint">
                   {s.lbl}
                 </div>

@@ -1,5 +1,6 @@
 import { motion, useReducedMotion } from 'framer-motion'
 import SectionHead from './SectionHead'
+import CountUp from './CountUp'
 import { fadeUp, staggerContainer, viewportOnce } from '../lib/motion'
 
 /* Inline icon set. Each is a 24x24 stroke glyph matching its category. */
@@ -110,26 +111,35 @@ export default function Inside() {
           whileInView={reduce ? undefined : 'show'}
           viewport={viewportOnce}
         >
-          {categories.map((c) => (
-            <motion.article
-              key={c.title}
-              variants={fadeUp}
-              whileHover={reduce ? undefined : { y: -4 }}
-              transition={{ duration: 0.2, ease: 'easeOut' }}
-              className="group relative overflow-hidden border border-line bg-panel p-[26px] transition-colors hover:border-blood hover:bg-panel-2"
-            >
-              {/* Top accent that grows on hover */}
-              <span className="absolute left-0 top-0 h-[3px] w-0 bg-blood transition-[width] duration-300 group-hover:w-full" />
-              <div className="mb-[18px] grid h-11 w-11 place-items-center border border-line bg-ink">
-                {c.icon}
-              </div>
-              <h3 className="font-display mb-2 text-[23px] font-bold">{c.title}</h3>
-              <p className="text-[14.5px] text-ash">{c.text}</p>
-              <div className="font-util mt-4 text-[11px] uppercase tracking-[0.12em] text-bone">
-                {c.count} · <b className="font-semibold text-blood">{c.ext}</b>
-              </div>
-            </motion.article>
-          ))}
+          {categories.map((c) => {
+            // "90 LUTs" -> count up the 90, keep the unit fixed.
+            const [, n, unit] = c.count.match(/^(\d+)\s+(.+)$/) || [, null, c.count]
+            return (
+              <motion.article
+                key={c.title}
+                variants={fadeUp}
+                whileHover={reduce ? undefined : { y: -4 }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
+                className="group relative overflow-hidden border border-line bg-panel p-[26px] transition-colors hover:border-blood hover:bg-panel-2"
+              >
+                {/* Top accent that grows on hover */}
+                <span className="absolute left-0 top-0 h-[3px] w-0 bg-blood transition-[width] duration-300 group-hover:w-full" />
+                <div className="mb-[18px] grid h-11 w-11 place-items-center border border-line bg-ink">
+                  {c.icon}
+                </div>
+                <h3 className="font-display mb-2 text-[23px] font-bold">{c.title}</h3>
+                <p className="text-[14.5px] text-ash">{c.text}</p>
+                <div className="font-util mt-4 text-[11px] uppercase tracking-[0.12em] text-bone">
+                  {n ? (
+                    <CountUp to={Number(n)} suffix={` ${unit}`} duration={1.2} />
+                  ) : (
+                    c.count
+                  )}{' '}
+                  · <b className="font-semibold text-blood">{c.ext}</b>
+                </div>
+              </motion.article>
+            )
+          })}
         </motion.div>
       </div>
     </section>
