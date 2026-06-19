@@ -26,6 +26,17 @@ export function startCheckout(packId) {
   return { ok: true }
 }
 
+// Registra o pack que está sendo comprado (usado tanto pelo redirect do
+// Mercado Pago quanto pelo checkout interno mockado) antes de cair na página
+// de retorno. Compartilha a mesma chave de armazenamento.
+export function writePending(packId) {
+  try {
+    localStorage.setItem(PENDING_KEY, JSON.stringify({ id: packId, at: Date.now() }))
+  } catch {
+    /* storage indisponível — segue mesmo assim */
+  }
+}
+
 export function readPending() {
   try {
     const raw = localStorage.getItem(PENDING_KEY)

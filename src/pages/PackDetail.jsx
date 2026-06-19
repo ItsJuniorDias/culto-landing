@@ -10,9 +10,7 @@ import { Halftone } from '../components/Decor'
 import { useAuth } from '../context/AuthContext'
 import { useDevMode } from '../context/DevModeContext'
 import { byId } from '../data/catalog'
-import { hasPaymentLink } from '../data/payments'
 import { downloadFile } from '../lib/download'
-import { startCheckout } from '../lib/checkout'
 import { EASE } from '../lib/motion'
 
 const Check = () => (
@@ -81,13 +79,11 @@ export default function PackDetail() {
   const reduce = useReducedMotion()
   const { user, ownsPack, purchase, revoke, recordDownload, downloads } = useAuth()
   const { devMode } = useDevMode()
-  const [notice, setNotice] = useState('')
 
   const pack = byId(id)
 
   useEffect(() => {
     window.scrollTo(0, 0)
-    setNotice('')
   }, [id])
 
   if (!pack) return <Navigate to="/" replace />
@@ -95,7 +91,6 @@ export default function PackDetail() {
   const free = !!pack.free
   const owned = ownsPack(pack.id)
   const count = downloads[pack.id] || 0
-  const linkReady = hasPaymentLink(pack.id)
 
   const handleDownload = () => {
     downloadFile(pack.file, pack.fileName)
@@ -103,16 +98,12 @@ export default function PackDetail() {
   }
 
   const handleBuy = () => {
-    setNotice('')
     if (!user) {
       // Precisa estar logado para a compra ficar atrelada à conta.
-      navigate('/login', { state: { from: `/pack/${pack.id}` } })
+      navigate('/login', { state: { from: `/checkout/${pack.id}` } })
       return
     }
-    const res = startCheckout(pack.id)
-    if (!res.ok && res.reason === 'no-link') {
-      setNotice('config')
-    }
+    navigate(`/checkout/${pack.id}`)
   }
 
   return (
@@ -237,24 +228,12 @@ export default function PackDetail() {
                       </Button>
 
                       <p className="font-util mt-3 text-center text-[10px] uppercase tracking-[0.14em] text-faint">
-                        Pagamento seguro via Mercado Pago · Pix, cartão ou boleto
+                        Pagamento seguro · Pix, cartão ou boleto
                       </p>
 
-                      {notice === 'config' && (
-                        <div className="mt-4 border border-blood/40 bg-blood/10 px-3 py-2.5 text-[13px] text-bone">
-                          Pagamento em configuração — volte em breve.
-                          {devMode && (
-                            <span className="mt-1 block text-[12px] text-ash">
-                              (dev: cole o link deste pack em{' '}
-                              <code className="text-blood-2">src/data/payments.js</code>)
-                            </span>
-                          )}
-                        </div>
-                      )}
-
-                      {!linkReady && notice !== 'config' && (
+                      {!user && (
                         <p className="font-util mt-2 text-center text-[10px] uppercase tracking-[0.14em] text-faint/70">
-                          {user ? '' : 'Você entra na conta antes de pagar'}
+                          Você entra na conta antes de pagar
                         </p>
                       )}
                     </>
