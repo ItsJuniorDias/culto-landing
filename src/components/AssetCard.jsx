@@ -1,32 +1,37 @@
-import { motion, useReducedMotion } from 'framer-motion'
-import { Link } from 'react-router-dom'
-import Button from './Button'
-import PosterTile from './PosterTile'
-import { useAuth } from '../context/AuthContext'
-import { downloadFile } from '../lib/download'
-import { fadeUp } from '../lib/motion'
+import { motion, useReducedMotion } from "framer-motion";
+import { Link } from "react-router-dom";
+import Button from "./Button";
+import PosterTile from "./PosterTile";
+import { useAuth } from "../context/AuthContext";
+import { downloadFile } from "../lib/download";
+import { fadeUp } from "../lib/motion";
 
-export default function AssetCard({ pack }) {
-  const reduce = useReducedMotion()
-  const { ownsPack, recordDownload, downloads } = useAuth()
-  const owned = ownsPack(pack.id)
-  const count = downloads[pack.id] || 0
-  const to = `/pack/${pack.id}`
+export default function AssetCard({ pack, active = false }) {
+  const reduce = useReducedMotion();
+  const { ownsPack, recordDownload, downloads } = useAuth();
+  const owned = ownsPack(pack.id);
+  const count = downloads[pack.id] || 0;
+  const to = `/pack/${pack.id}`;
 
   const handleDownload = () => {
-    downloadFile(pack.file, pack.fileName)
-    recordDownload(pack.id)
-  }
+    downloadFile(pack.file, pack.fileName);
+    recordDownload(pack.id);
+  };
 
   return (
     <motion.article
       variants={fadeUp}
       whileHover={reduce ? undefined : { y: -4 }}
-      transition={{ duration: 0.2, ease: 'easeOut' }}
-      className="group flex flex-col overflow-hidden border border-line bg-panel transition-colors hover:border-blood"
+      transition={{ duration: 0.2, ease: "easeOut" }}
+      className={`group flex flex-col overflow-hidden border bg-panel transition-colors ${
+        active ? "border-blood" : "border-line hover:border-blood"
+      }`}
     >
       {/* thumbnail → página de detalhes */}
-      <Link to={to} className="relative block aspect-[16/10] overflow-hidden border-b border-line">
+      <Link
+        to={to}
+        className="relative block aspect-[16/10] overflow-hidden border-b border-line"
+      >
         {pack.thumb ? (
           <img
             src={pack.thumb}
@@ -35,23 +40,32 @@ export default function AssetCard({ pack }) {
             className="h-full w-full object-cover object-top"
           />
         ) : (
-          <PosterTile title={pack.title.split('—').pop().trim()} format={pack.format} />
+          <PosterTile
+            title={pack.title.split("—").pop().trim()}
+            format={pack.format}
+          />
         )}
 
         <span
           className={`font-util absolute left-0 top-0 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] ${
-            owned ? 'bg-blood text-bone' : 'bg-ink/85 text-ash backdrop-blur-sm'
+            owned ? "bg-blood text-bone" : "bg-ink/85 text-ash backdrop-blur-sm"
           }`}
         >
-          {owned ? 'Na biblioteca' : pack.price}
+          {owned ? "Na biblioteca" : pack.price}
         </span>
       </Link>
 
       {/* body */}
       <div className="flex flex-1 flex-col p-6">
-        <span className="font-util text-[11px] uppercase tracking-[0.2em] text-blood">{pack.kind}</span>
+        <span className="font-util text-[11px] uppercase tracking-[0.2em] text-blood">
+          {pack.kind}
+        </span>
         <Link to={to}>
-          <h3 className="font-display mt-1.5 text-2xl font-extrabold leading-none transition-colors group-hover:text-blood-2">
+          <h3
+            className={`font-display mt-1.5 text-2xl font-extrabold leading-none transition-colors ${
+              active ? "text-blood-2" : "group-hover:text-blood-2"
+            }`}
+          >
             {pack.title}
           </h3>
         </Link>
@@ -82,7 +96,9 @@ export default function AssetCard({ pack }) {
                 to={to}
                 className="font-util mt-2.5 block text-center text-[10px] uppercase tracking-[0.16em] text-faint transition-colors hover:text-bone"
               >
-                {count > 0 ? `${count} ${count === 1 ? 'download' : 'downloads'} · ver detalhes` : 'Ver detalhes'}
+                {count > 0
+                  ? `${count} ${count === 1 ? "download" : "downloads"} · ver detalhes`
+                  : "Ver detalhes"}
               </Link>
             </>
           ) : (
@@ -101,5 +117,5 @@ export default function AssetCard({ pack }) {
         </div>
       </div>
     </motion.article>
-  )
+  );
 }

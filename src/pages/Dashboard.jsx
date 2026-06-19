@@ -1,25 +1,25 @@
-import { motion, useReducedMotion } from 'framer-motion'
-import { Link } from 'react-router-dom'
-import DashboardHeader from '../components/DashboardHeader'
-import AssetCard from '../components/AssetCard'
-import Eyebrow from '../components/Eyebrow'
-import Button from '../components/Button'
-import Reveal from '../components/Reveal'
-import CountUp from '../components/CountUp'
-import { useAuth } from '../context/AuthContext'
-import { catalog, byId } from '../data/catalog'
-import { downloadFile } from '../lib/download'
-import { staggerContainer, viewportOnce, EASE } from '../lib/motion'
+import { motion, useReducedMotion } from "framer-motion";
+import { Link } from "react-router-dom";
+import DashboardHeader from "../components/DashboardHeader";
+import AssetCard from "../components/AssetCard";
+import Eyebrow from "../components/Eyebrow";
+import Button from "../components/Button";
+import Reveal from "../components/Reveal";
+import CountUp from "../components/CountUp";
+import { useAuth } from "../context/AuthContext";
+import { catalog, byId } from "../data/catalog";
+import { downloadFile } from "../lib/download";
+import { staggerContainer, viewportOnce, EASE } from "../lib/motion";
 
 function FeaturedPack({ pack }) {
-  const reduce = useReducedMotion()
-  const { recordDownload, downloads } = useAuth()
-  const count = downloads[pack.id] || 0
+  const reduce = useReducedMotion();
+  const { recordDownload, downloads } = useAuth();
+  const count = downloads[pack.id] || 0;
 
   const handleDownload = () => {
-    downloadFile(pack.file, pack.fileName)
-    recordDownload(pack.id)
-  }
+    downloadFile(pack.file, pack.fileName);
+    recordDownload(pack.id);
+  };
 
   return (
     <motion.section
@@ -31,7 +31,11 @@ function FeaturedPack({ pack }) {
       <div className="grid gap-0 md:grid-cols-[300px_1fr]">
         {/* poster */}
         <div className="relative h-[340px] overflow-hidden border-b border-line md:h-auto md:border-b-0 md:border-r">
-          <img src={pack.thumb} alt={pack.title} className="h-full w-full object-cover object-top" />
+          <img
+            src={pack.thumb}
+            alt={pack.title}
+            className="h-full w-full object-cover object-top"
+          />
           <span className="font-util absolute left-0 top-0 bg-blood px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-bone">
             {pack.price}
           </span>
@@ -66,12 +70,20 @@ function FeaturedPack({ pack }) {
               </div>
             </div>
             <div>
-              <div className="font-display text-xl font-extrabold">{pack.spec.split('·')[0].trim()}</div>
-              <div className="mt-0.5 text-[10px] uppercase tracking-[0.14em] text-faint">resolução</div>
+              <div className="font-display text-xl font-extrabold">
+                {pack.spec.split("·")[0].trim()}
+              </div>
+              <div className="mt-0.5 text-[10px] uppercase tracking-[0.14em] text-faint">
+                resolução
+              </div>
             </div>
             <div>
-              <div className="font-display text-xl font-extrabold">{pack.size}</div>
-              <div className="mt-0.5 text-[10px] uppercase tracking-[0.14em] text-faint">tamanho</div>
+              <div className="font-display text-xl font-extrabold">
+                {pack.size}
+              </div>
+              <div className="mt-0.5 text-[10px] uppercase tracking-[0.14em] text-faint">
+                tamanho
+              </div>
             </div>
           </div>
 
@@ -87,29 +99,31 @@ function FeaturedPack({ pack }) {
             </Link>
             <span className="font-util text-[11px] uppercase tracking-[0.14em] text-faint">
               {count > 0
-                ? `${count} ${count === 1 ? 'download' : 'downloads'}`
-                : 'PNG + JPEG · grátis na sua conta'}
+                ? `${count} ${count === 1 ? "download" : "downloads"}`
+                : "PNG + JPEG · grátis na sua conta"}
             </span>
           </div>
         </div>
       </div>
     </motion.section>
-  )
+  );
 }
 
 export default function Dashboard() {
-  const reduce = useReducedMotion()
-  const { user, ownedCount, totalDownloads } = useAuth()
+  const reduce = useReducedMotion();
+  const { user, ownedCount, totalDownloads } = useAuth();
 
-  const featured = byId('kids-space')
-  const rest = catalog.filter((p) => p.id !== 'kids-space')
-  const firstName = (user?.name || '').split(' ')[0] || 'criador'
+  const featured = byId("kids-space");
+  const rest = catalog.filter((p) => p.id !== "kids-space");
+  // The visually centered card in the 3-up grid stays highlighted (hover always on).
+  const middleIndex = Math.floor(rest.length / 2);
+  const firstName = (user?.name || "").split(" ")[0] || "criador";
 
   const stats = [
-    { num: ownedCount, lbl: 'Packs na biblioteca' },
-    { num: totalDownloads, lbl: 'Downloads' },
-    { num: '∞', lbl: 'Acesso vitalício' },
-  ]
+    { num: ownedCount, lbl: "Packs na biblioteca" },
+    { num: totalDownloads, lbl: "Downloads" },
+    { num: "∞", lbl: "Acesso vitalício" },
+  ];
 
   return (
     <>
@@ -127,14 +141,15 @@ export default function Dashboard() {
             Olá, {firstName}.
           </h1>
           <p className="mt-3 max-w-[52ch] text-[16px] text-ash">
-            Baixe seus packs, desbloqueie o resto do catálogo e leve tudo direto pro seu editor.
+            Baixe seus packs, desbloqueie o resto do catálogo e leve tudo direto
+            pro seu editor.
           </p>
 
           <div className="mt-7 flex flex-wrap gap-x-12 gap-y-6 border-y border-line py-6">
             {stats.map((s) => (
               <div key={s.lbl}>
                 <div className="font-display text-[34px] font-extrabold leading-none">
-                  {typeof s.num === 'number' ? (
+                  {typeof s.num === "number" ? (
                     <CountUp to={s.num} duration={1.1} />
                   ) : (
                     s.num
@@ -165,23 +180,24 @@ export default function Dashboard() {
           <motion.div
             className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3"
             variants={staggerContainer(0.08)}
-            initial={reduce ? false : 'hidden'}
-            whileInView={reduce ? undefined : 'show'}
+            initial={reduce ? false : "hidden"}
+            whileInView={reduce ? undefined : "show"}
             viewport={viewportOnce}
           >
-            {rest.map((pack) => (
-              <AssetCard key={pack.id} pack={pack} />
+            {rest.map((pack, i) => (
+              <AssetCard key={pack.id} pack={pack} active={i === middleIndex} />
             ))}
           </motion.div>
         </div>
 
         {/* persistence note */}
         <p className="mt-12 max-w-[64ch] text-[12px] leading-relaxed text-faint">
-          O pagamento dos packs é feito pelo Mercado Pago. Depois da compra aprovada, o pack
-          desbloqueia na sua conta e o download fica liberado. Sua conta, biblioteca e downloads
-          ficam salvos neste navegador (armazenamento local) — limpar os dados do site zera tudo.
+          O pagamento dos packs é feito pelo Mercado Pago. Depois da compra
+          aprovada, o pack desbloqueia na sua conta e o download fica liberado.
+          Sua conta, biblioteca e downloads ficam salvos neste navegador
+          (armazenamento local) — limpar os dados do site zera tudo.
         </p>
       </main>
     </>
-  )
+  );
 }
