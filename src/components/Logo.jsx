@@ -1,11 +1,23 @@
 import { Link } from 'react-router-dom'
 
-/* Wordmark: glowing red square + blackletter "Culto". Links via router. */
-export default function Logo({ to = '/', size = 'text-[27px]' }) {
+/* Wordmark: red square + blackletter "Culto" + "DO DESIGNER".
+   Asset lives in /public/assets and is served at the site root, so it's
+   referenced by absolute URL (same convention as the catalog images).
+   Height is controlled via `className` (defaults to h-10); width stays
+   auto to preserve the logo's aspect ratio. */
+export default function Logo({ to = '/', className = 'h-10' }) {
   return (
-    <Link to={to} className={`font-display inline-flex items-center gap-[11px] font-extrabold ${size}`}>
-      <span aria-hidden="true" className="shadow-glow-sm h-[22px] w-[22px] flex-none bg-blood" />
-      Culto
+    <Link
+      to={to}
+      aria-label="Culto do Designer — início"
+      className="inline-flex flex-none items-center"
+    >
+      <img
+        src="/assets/cdd-logo.png"
+        alt="Culto do Designer"
+        draggable="false"
+        className={`${className} w-auto select-none`}
+      />
     </Link>
   )
 }
