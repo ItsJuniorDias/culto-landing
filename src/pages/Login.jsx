@@ -1,52 +1,52 @@
-import { useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { motion, useReducedMotion } from 'framer-motion'
-import Logo from '../components/Logo'
-import Eyebrow from '../components/Eyebrow'
-import Button from '../components/Button'
-import Field from '../components/Field'
-import { Halftone, Rays, Burst } from '../components/Decor'
-import { useAuth, DEMO_HINT } from '../context/AuthContext'
-import { EASE } from '../lib/motion'
+import { useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { motion, useReducedMotion } from "framer-motion";
+import Logo from "../components/Logo";
+import Eyebrow from "../components/Eyebrow";
+import Button from "../components/Button";
+import Field from "../components/Field";
+import { Halftone, Rays, Burst } from "../components/Decor";
+import { useAuth, DEMO_HINT } from "../context/AuthContext";
+import { EASE } from "../lib/motion";
 
 export default function Login() {
-  const reduce = useReducedMotion()
-  const { login, signUp } = useAuth()
-  const navigate = useNavigate()
-  const location = useLocation()
-  const dest = location.state?.from || '/dashboard'
+  const reduce = useReducedMotion();
+  const { login, signUp } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const dest = location.state?.from || "/dashboard";
 
-  const [mode, setMode] = useState('login') // 'login' | 'signup'
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
+  const [mode, setMode] = useState("login"); // 'login' | 'signup'
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
-  const isSignup = mode === 'signup'
+  const isSignup = mode === "signup";
 
   const submit = (e) => {
-    e.preventDefault()
-    setError('')
+    e.preventDefault();
+    setError("");
     try {
-      if (isSignup) signUp({ name, email, password })
-      else login({ email, password })
-      navigate(dest, { replace: true })
+      if (isSignup) signUp({ name, email, password });
+      else login({ email, password });
+      navigate(dest, { replace: true });
     } catch (err) {
-      setError(err.message)
+      setError(err.message);
     }
-  }
+  };
 
   const useDemo = () => {
-    setMode('login')
-    setEmail(DEMO_HINT.email)
-    setPassword(DEMO_HINT.password)
-    setError('')
-  }
+    setMode("login");
+    setEmail(DEMO_HINT.email);
+    setPassword(DEMO_HINT.password);
+    setError("");
+  };
 
   const switchMode = (next) => {
-    setMode(next)
-    setError('')
-  }
+    setMode(next);
+    setError("");
+  };
 
   return (
     <main className="relative grid min-h-screen place-items-center overflow-hidden bg-[radial-gradient(120%_90%_at_50%_0%,#19181d_0%,#08080A_60%)] px-6 py-16">
@@ -66,22 +66,22 @@ export default function Login() {
         <div className="mt-7">
           <Eyebrow solo>Área de membros</Eyebrow>
           <h1 className="font-display mt-3 text-[40px] font-black leading-[0.92]">
-            {isSignup ? 'Crie sua conta' : 'Entre no Culto'}
+            {isSignup ? "Crie sua conta" : "Entre no Culto"}
           </h1>
         </div>
 
         {/* mode tabs */}
         <div className="mt-6 grid grid-cols-2 border border-line">
           {[
-            ['login', 'Entrar'],
-            ['signup', 'Criar conta'],
+            ["login", "Entrar"],
+            ["signup", "Criar conta"],
           ].map(([key, label]) => (
             <button
               key={key}
               type="button"
               onClick={() => switchMode(key)}
               className={`font-util py-2.5 text-[12px] font-semibold uppercase tracking-[0.16em] transition-colors ${
-                mode === key ? 'bg-blood text-bone' : 'text-ash hover:text-bone'
+                mode === key ? "bg-blood text-bone" : "text-ash hover:text-bone"
               }`}
             >
               {label}
@@ -115,7 +115,7 @@ export default function Login() {
             value={password}
             onChange={setPassword}
             placeholder="••••••••"
-            autoComplete={isSignup ? 'new-password' : 'current-password'}
+            autoComplete={isSignup ? "new-password" : "current-password"}
             required
           />
 
@@ -126,24 +126,9 @@ export default function Login() {
           )}
 
           <Button type="submit" full className="mt-1">
-            {isSignup ? 'Criar conta ↗' : 'Entrar ↗'}
+            {isSignup ? "Criar conta ↗" : "Entrar ↗"}
           </Button>
         </form>
-
-        {/* demo hint */}
-        <div className="mt-6 border border-line bg-ink/60 p-4">
-          <p className="font-util text-[10px] uppercase tracking-[0.18em] text-faint">Conta de demonstração</p>
-          <p className="mt-1.5 text-[13px] text-ash">
-            {DEMO_HINT.email} · {DEMO_HINT.password}
-          </p>
-          <button
-            type="button"
-            onClick={useDemo}
-            className="font-util mt-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-blood transition-colors hover:text-blood-2"
-          >
-            Preencher automaticamente →
-          </button>
-        </div>
 
         <p className="mt-6 text-center text-[13px] text-faint">
           <Link to="/" className="transition-colors hover:text-bone">
@@ -152,5 +137,5 @@ export default function Login() {
         </p>
       </motion.div>
     </main>
-  )
+  );
 }
