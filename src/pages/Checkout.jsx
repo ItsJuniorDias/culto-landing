@@ -12,6 +12,7 @@ import { Card, QrCode, Barcode, Lock, Shield, Check, Copy, Chevron, ArrowLeft, S
 import { useAuth } from '../context/AuthContext'
 import { byId } from '../data/catalog'
 import { writePending } from '../lib/checkout'
+import { api, ApiError, centsToReais } from '../lib/api'
 import { formatBRL, installmentOptions } from '../lib/money'
 import { EASE } from '../lib/motion'
 import {
@@ -30,12 +31,7 @@ import {
   cpfValid,
 } from '../lib/forms'
 
-// Cupons mockados — case-insensitive.
-const COUPONS = {
-  CULTO10: { type: 'percent', value: 10, label: '10% OFF' },
-  PRIMEIRA: { type: 'percent', value: 15, label: '15% OFF' },
-  CRIADOR: { type: 'amount', value: 50, label: 'R$ 50 OFF' },
-}
+// Os cupons agora são validados pela API (fonte da verdade). Veja applyCoupon.
 
 // ── QR fake (não escaneável, só pra aparência) ──────────────────────────────
 function seededRng(seed) {
@@ -147,19 +143,19 @@ export default function Checkout() {
   const [summaryOpen, setSummaryOpen] = useState(false)
   const [copied, setCopied] = useState('')
 
-  // cupom
+  // cupom — validado e precificado pela API (centavos → reais para exibir)
   const [couponInput, setCouponInput] = useState('')
-  const [appliedCoupon, setAppliedCoupon] = useState(null)
+  const [appliedCoupon, setAppliedCoupon] = useState(null) // { code, label }
+  const [serverPricing, setServerPricing] = useState(null) // PricingBreakdown da API
   const [couponError, setCouponError] = useState('')
+  const [couponLoading, setCouponLoading] = useState(false)
+
+  // erro ao criar a sessão de checkout (ex.: API fora do ar)
+  const [submitError, setSubmitError] = useState('')
 
   const subtotal = pack?.priceValue || 0
-  const discount = useMemo(() => {
-    if (!appliedCoupon) return 0
-    const raw =
-      appliedCoupon.type === 'percent' ? (subtotal * appliedCoupon.value) / 100 : appliedCoupon.value
-    return Math.min(Math.round(raw * 100) / 100, subtotal)
-  }, [appliedCoupon, subtotal])
-  const total = Math.max(0, Math.round((subtotal - discount) * 100) / 100)
+  const discount = serverPricing ? centsToReais(serverPricing.discountCents) : 0
+  const total = serverPricing ? centsToReais(serverPricing.totalCents) : subtotal
 
   const brand = detectBrand(card.number)
   const installmentList = useMemo(() => installmentOptions(total), [total])
@@ -189,19 +185,31 @@ export default function Checkout() {
   // ── Handlers ──
   const blur = (f) => setTouched((t) => ({ ...t, [f]: true }))
 
-  const applyCoupon = () => {
+  const applyCoupon = async () => {
     const code = couponInput.trim().toUpperCase()
-    if (!code) return
-    const def = COUPONS[code]
-    if (!def) {
-      setCouponError('Cupom inválido ou expirado')
-      return
-    }
-    setAppliedCoupon({ code, ...def })
+    if (!code || couponLoading) return
+    setCouponLoading(true)
     setCouponError('')
+    try {
+      // A API valida o cupom contra o pack e devolve o preço já recalculado.
+      const { pricing } = await api.validateCoupon({ packId: pack.id, code })
+      setAppliedCoupon(pricing.coupon || { code, label: 'Cupom aplicado' })
+      setServerPricing(pricing)
+    } catch (err) {
+      const msg =
+        err instanceof ApiError && err.code === 'COUPON_INVALID'
+          ? 'Cupom inválido ou expirado'
+          : (err?.message ?? 'Não foi possível validar o cupom')
+      setCouponError(msg)
+      setAppliedCoupon(null)
+      setServerPricing(null)
+    } finally {
+      setCouponLoading(false)
+    }
   }
   const removeCoupon = () => {
     setAppliedCoupon(null)
+    setServerPricing(null)
     setCouponError('')
     setCouponInput('')
   }
@@ -216,7 +224,7 @@ export default function Checkout() {
     setTimeout(() => setCopied(''), 1800)
   }
 
-  const submit = (e) => {
+  const submit = async (e) => {
     e.preventDefault()
     if (status === 'processing') return
 
@@ -226,12 +234,36 @@ export default function Checkout() {
     if (!isValid) return
 
     setStatus('processing')
-    const outcome = method === 'boleto' ? 'pending' : 'approved'
-    const delay = reduce ? 400 : method === 'card' ? 1800 : method === 'pix' ? 1500 : 1300
-    setTimeout(() => {
-      writePending(pack.id) // o /compra/retorno lê isso + o status da URL e libera o pack
-      navigate(`/compra/retorno?status=${outcome}&pack=${pack.id}&payment_id=mock_${Date.now()}`)
-    }, delay)
+    setSubmitError('')
+
+    // Monta o payload pra API. O CPF vai só com dígitos; o preço NÃO é enviado
+    // — o servidor recalcula a partir do pack + cupom (cliente não dita valor).
+    const payload = {
+      packId: pack.id,
+      paymentMethod: method,
+      customer: { email: email.trim(), cpf: onlyDigits(cpf) },
+      ...(appliedCoupon ? { couponCode: appliedCoupon.code } : {}),
+    }
+
+    if (method === 'card') {
+      // PCI: em produção o cartão é tokenizado pelo SDK do gateway e só o token
+      // trafega. Aqui geramos um token de demonstração (o PAN cru não é enviado).
+      const last4 = onlyDigits(card.number).slice(-4)
+      payload.cardToken = `tok_mock_${last4 || '0000'}_${Date.now()}`
+      payload.installments = selN
+      if (nameValid(card.name)) payload.customer.name = card.name.trim()
+    }
+
+    try {
+      const { order } = await api.createCheckoutSession(payload)
+      // Guarda o pack como fallback de exibição na página de retorno.
+      writePending(pack.id)
+      // O status REAL é consultado no servidor pela página de retorno (via order id).
+      navigate(`/compra/retorno?order=${order.id}`)
+    } catch (err) {
+      setStatus('idle')
+      setSubmitError(err?.message ?? 'Não foi possível concluir o pagamento. Tente de novo.')
+    }
   }
 
   // rótulos contextuais
@@ -514,6 +546,11 @@ export default function Checkout() {
 
               {/* CTA */}
               <div className="mt-6">
+                {submitError && (
+                  <div className="mb-4 border border-blood/50 bg-blood/10 px-4 py-3 text-[13px] text-bone">
+                    {submitError}
+                  </div>
+                )}
                 <Button type="submit" full disabled={status === 'processing'}>
                   {status === 'processing' ? (
                     <>
@@ -534,7 +571,7 @@ export default function Checkout() {
                   </span>
                 </div>
                 <p className="font-util mt-3 text-center text-[10px] uppercase tracking-[0.12em] text-faint/70">
-                  Checkout de demonstração — dados mockados, nada é cobrado
+                  Checkout conectado à API — gateway em modo demonstração, nada é cobrado
                 </p>
               </div>
             </form>

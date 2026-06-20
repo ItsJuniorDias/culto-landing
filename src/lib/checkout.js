@@ -54,14 +54,17 @@ export function clearPending() {
   }
 }
 
-// Lê o resultado que o Mercado Pago anexa na URL de retorno.
-// Status possíveis do MP: approved | pending | in_process | rejected | failure
+// Lê o resultado anexado na URL de retorno.
+// Fluxo novo (nossa API): só vem ?order=<id> — o status REAL é consultado no
+// servidor pela página de retorno (não confiamos no status da URL).
+// Fluxo legado (Mercado Pago): status/collection_status + pack/external_reference.
 export function parseReturn(search = window.location.search) {
   const p = new URLSearchParams(search)
+  const orderId = p.get('order') || ''
   const status = (p.get('status') || p.get('collection_status') || '').toLowerCase()
   const packFromUrl = p.get('pack') || p.get('external_reference') || ''
   const paymentId = p.get('payment_id') || p.get('collection_id') || ''
-  return { status, packFromUrl, paymentId }
+  return { orderId, status, packFromUrl, paymentId }
 }
 
 export function isApproved(status) {

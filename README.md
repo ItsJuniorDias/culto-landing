@@ -3,24 +3,49 @@
 Marketplace de packs de assets para criadores — **React + Vite + Tailwind CSS + Framer Motion**.
 Tema: pôster escuro, tipografia *blackletter* (Grenze Gotisch), grão de filme, vazamentos de luz e vermelho-sangue como acento.
 
-**Landing page + login + dashboard + página de detalhes por pack.** Os downloads ficam **bloqueados até a compra**. Pagamento via **Mercado Pago (links de pagamento)**. **Sem back-end**: contas, sessão e biblioteca ficam no navegador via `localStorage`.
+**Landing page + login + dashboard + página de detalhes por pack.** Os downloads ficam **bloqueados até a compra**. O **checkout é integrado à API CULTO** (backend próprio em **Fastify + TypeScript**): o preço é **recalculado no servidor**, o cupom é **validado pela API** e o pedido é confirmado por **webhook do gateway**. Contas, sessão e biblioteca ainda ficam no navegador via `localStorage` (a API cobre só o fluxo de checkout).
 
 ## Rodando
 
 Pré-requisito: **Node.js 18+**.
 
+O front conversa com o backend de checkout (`culto-checkout-api`). Suba os dois:
+
 ```bash
+# 1) Backend (em outra aba) — http://localhost:3333
+cd ../culto-checkout-api
+npm install && npm run dev
+
+# 2) Front — http://localhost:5173
 npm install      # (ou: bun install)
-npm run dev      # http://localhost:5173
+npm run dev
 npm run build    # build de produção em /dist
 npm run preview  # serve a build localmente
 ```
 
+A URL da API vem de `VITE_API_URL` (veja `.env.example`); o padrão já aponta para `http://localhost:3333`. O CORS do backend já libera `http://localhost:5173`.
+
+---
+
+## 🔌 Integração com a API de checkout
+
+O fluxo de pagamento foi ligado ao backend. O que mudou:
+
+- **`src/lib/api.js`** — cliente da API (fetch + tratamento de erro). Toda chamada ao servidor passa por aqui. Base configurável via `VITE_API_URL`.
+- **Checkout (`src/pages/Checkout.jsx`)** — ao aplicar um **cupom**, chama `POST /api/coupons/validate` e usa o preço que o servidor devolve. Ao finalizar, chama `POST /api/checkout/sessions` (o servidor cria o pedido + a cobrança e **recalcula o preço** — o cliente não dita valor) e redireciona para `/compra/retorno?order=<id>`.
+- **Retorno (`src/pages/CheckoutReturn.jsx`)** — consulta `GET /api/checkout/sessions/:id` para saber o **status real** (não confia mais no status da URL). Pix/boleto pendente faz *polling* até confirmar; no modo dev há um botão para **simular a confirmação** (dispara o webhook do gateway via `POST /api/dev/simulate-webhook`).
+- **Cartão (PCI):** o número cru **não** é enviado. O front manda um *token* de cartão de demonstração — em produção, troque pela tokenização do SDK do gateway (PradaPay), mantendo o PAN fora do seu servidor.
+
+A liberação do pack na biblioteca continua no `localStorage` (via `AuthContext.purchase`), acionada quando o servidor confirma o pagamento — porque a API cobre só o checkout, não a conta do usuário.
+
+---
+
 ## Páginas / rotas
 
 - `/` — landing page (os CTAs de compra levam à página do pack).
-- `/pack/:id` — **detalhes do pack**: galeria, o que vem dentro, e o botão de **download (bloqueado até comprar)** ou **Comprar** via Mercado Pago. Pública.
-- `/compra/retorno` — página de **retorno do Mercado Pago**: lê o status do pagamento e libera o pack. Pública.
+- `/pack/:id` — **detalhes do pack**: galeria, o que vem dentro, e o botão de **download (bloqueado até comprar)** ou **Comprar**. Pública.
+- `/checkout/:id` — **checkout integrado à API** (dados, cupom, cartão/Pix/boleto). Protegido (exige login).
+- `/compra/retorno` — página de **retorno**: consulta o status do pedido na API e libera o pack. Pública.
 - `/login` — entrar **ou** criar conta (mesmo formulário, com abas).
 - `/dashboard` — biblioteca do usuário (rota protegida; sem sessão, redireciona pro login).
 
