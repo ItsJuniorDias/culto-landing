@@ -192,7 +192,7 @@ export default function Dashboard() {
 
         {/* persistence note */}
         <p className="mt-12 max-w-[64ch] text-[12px] leading-relaxed text-faint">
-          O pagamento dos packs é feito pelo Mercado Pago. Depois da compra
+          O pagamento dos packs é feito pelo Pradapay. Depois da compra
           aprovada, o pack desbloqueia na sua conta e o download fica liberado.
           Sua conta, biblioteca e downloads ficam salvos neste navegador
           (armazenamento local) — limpar os dados do site zera tudo.
