@@ -1,6 +1,7 @@
 import Navbar from '../components/Navbar'
 import Hero from '../components/Hero'
 import Compat from '../components/Compat'
+import Reel from '../components/Reel'
 import Inside from '../components/Inside'
 import Packs from '../components/Packs'
 import Steps from '../components/Steps'
@@ -16,6 +17,7 @@ export default function Landing() {
       <main>
         <Hero />
         <Compat />
+        <Reel />
         <Inside />
         <Packs />
         <Steps />

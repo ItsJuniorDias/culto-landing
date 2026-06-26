@@ -162,8 +162,28 @@ export const footerCols = [
 ]
 
 export const navLinks = [
+  { label: 'Vídeo', href: '#reel' },
   { label: 'Packs', href: '#packs' },
   { label: 'O que vem', href: '#inside' },
   { label: 'Quem usa', href: '#voices' },
   { label: 'Dúvidas', href: '#faq' },
 ]
+
+// ── Showreel ────────────────────────────────────────────────────────────────
+// Troque pelos dados do seu vídeo. Duas formas de usar:
+//   A) YouTube/Vimeo  → preencha `youtubeId` com o id do vídeo
+//                       (ex.: youtu.be/AbC123 → youtubeId: 'AbC123')
+//   B) Vídeo próprio   → deixe youtubeId: null e aponte `src` p/ um .mp4
+//                       em /public/assets (ex.: '/assets/reel.mp4')
+// `poster` é a thumb mostrada antes do play (ideal 1280×720).
+export const reel = {
+  youtubeId: 'ScMzIvxBSi4', // ← id do seu showreel no YouTube
+  src: null, // ← ou '/assets/reel.mp4' para vídeo hospedado
+  poster: '/assets/kids-space-01.jpg', // ← troque pela sua capa
+  duration: '1:48',
+  stats: [
+    { k: '4K', v: 'ProRes & H.264' },
+    { k: '60', v: 'fps no render' },
+    { k: '100%', v: 'licença comercial' },
+  ],
+}
