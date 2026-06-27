@@ -9,7 +9,7 @@ import { useAuth } from '../context/AuthContext'
 import { useDevMode } from '../context/DevModeContext'
 import { byId } from '../data/catalog'
 import { downloadFile } from '../lib/download'
-import { parseReturn, readPending, clearPending, isApproved, isPending } from '../lib/checkout'
+import { parseReturn, readPending, clearPending, readPendingPayment, clearPendingPayment, isApproved, isPending } from '../lib/checkout'
 import { api } from '../lib/api'
 import { EASE } from '../lib/motion'
 
@@ -20,6 +20,8 @@ export default function CheckoutReturn() {
   const { devMode } = useDevMode()
   const [resolved, setResolved] = useState(null) // { kind, pack, orderId }
   const [confirming, setConfirming] = useState(false)
+  const [payment, setPayment] = useState(null) // Pix/boleto guardado no checkout
+  const [copied, setCopied] = useState(false)
 
   // Resolve o estado da compra.
   //  Fluxo novo  (nossa API): ?order=<id> → consulta o status REAL no servidor.
@@ -33,6 +35,7 @@ export default function CheckoutReturn() {
         const { order } = await api.getCheckoutSession(orderId)
         const pack = byId(order.packId) || byId(pending?.id) || null
         if (order.status === 'paid') {
+          clearPendingPayment(orderId)
           if (user && pack) {
             purchase(pack.id) // libera o pack na conta logada
             clearPending()
@@ -82,6 +85,12 @@ export default function CheckoutReturn() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user])
 
+  // Lê o Pix/boleto guardado no checkout (copia-e-cola + QR) pra exibir aqui.
+  useEffect(() => {
+    const { orderId } = parseReturn()
+    if (orderId) setPayment(readPendingPayment(orderId))
+  }, [])
+
   // Pix/boleto pendente: faz polling no servidor até o pagamento confirmar.
   useEffect(() => {
     if (resolved?.kind !== 'pending' || !resolved?.orderId) return
@@ -101,6 +110,17 @@ export default function CheckoutReturn() {
   const handleDownload = (pack) => {
     downloadFile(pack.file, pack.fileName)
     recordDownload(pack.id)
+  }
+
+  const copyCode = (text) => {
+    if (!text) return
+    try {
+      navigator.clipboard?.writeText(text)
+    } catch {
+      /* clipboard indisponível */
+    }
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1800)
   }
 
   // [DEV] Confirma o pagamento simulando o webhook do gateway (mock).
@@ -252,6 +272,70 @@ export default function CheckoutReturn() {
     )
   }
 
+  // Bloco do Pix/boleto (copia-e-cola + QR) — só enquanto o pagamento está pendente.
+  let paymentBlock = null
+  if (r.kind === 'pending' && payment?.pix) {
+    paymentBlock = (
+      <div className="mt-6 border border-line bg-ink/60 p-5">
+        {payment.pix.qrCodeImage && (
+          <img
+            src={payment.pix.qrCodeImage}
+            alt="QR Code do Pix"
+            className="mx-auto mb-4 h-44 w-44 bg-white p-2"
+          />
+        )}
+        <p className="font-util mb-2 text-[11px] uppercase tracking-[0.2em] text-faint">
+          Pix copia e cola
+        </p>
+        <div className="flex items-stretch gap-2">
+          <code className="flex-1 truncate border border-line bg-ink px-3 py-2 text-[12px] text-ash">
+            {payment.pix.copyPaste}
+          </code>
+          <button
+            type="button"
+            onClick={() => copyCode(payment.pix.copyPaste)}
+            className="font-util shrink-0 border border-line px-3 text-[11px] uppercase tracking-[0.1em] text-bone transition-colors hover:border-blood"
+          >
+            {copied ? 'Copiado' : 'Copiar'}
+          </button>
+        </div>
+        <p className="mt-3 text-[12px] text-faint">
+          Abra o app do banco, escaneie o QR ou cole o código. A liberação é na hora.
+        </p>
+      </div>
+    )
+  } else if (r.kind === 'pending' && payment?.boleto) {
+    paymentBlock = (
+      <div className="mt-6 border border-line bg-ink/60 p-5">
+        <p className="font-util mb-2 text-[11px] uppercase tracking-[0.2em] text-faint">
+          Linha digitável do boleto
+        </p>
+        <div className="flex items-stretch gap-2">
+          <code className="flex-1 truncate border border-line bg-ink px-3 py-2 text-[12px] text-ash">
+            {payment.boleto.line}
+          </code>
+          <button
+            type="button"
+            onClick={() => copyCode(payment.boleto.line)}
+            className="font-util shrink-0 border border-line px-3 text-[11px] uppercase tracking-[0.1em] text-bone transition-colors hover:border-blood"
+          >
+            {copied ? 'Copiado' : 'Copiar'}
+          </button>
+        </div>
+        {payment.boleto.pdfUrl && (
+          <a
+            href={payment.boleto.pdfUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="font-util mt-3 inline-block text-[12px] uppercase tracking-[0.1em] text-blood-2 hover:underline"
+          >
+            Abrir boleto (PDF) ↗
+          </a>
+        )}
+      </div>
+    )
+  }
+
   return (
     <>
       <StoreNav />
@@ -271,6 +355,7 @@ export default function CheckoutReturn() {
             {title}
           </h1>
           {body}
+          {paymentBlock}
           {actions}
         </motion.div>
       </main>

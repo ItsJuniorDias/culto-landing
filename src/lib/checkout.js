@@ -54,6 +54,37 @@ export function clearPending() {
   }
 }
 
+// ── Detalhes do pagamento (Pix/boleto) pra exibir na página de retorno ──
+// O backend devolve o copia-e-cola/QR no POST de criação da sessão; guardamos
+// por orderId pra a página de retorno mostrar enquanto o pagamento não confirma.
+export function writePendingPayment(orderId, payment) {
+  if (!orderId || !payment) return
+  try {
+    localStorage.setItem(`culto:payment:${orderId}`, JSON.stringify(payment))
+  } catch {
+    /* storage indisponível — segue mesmo assim */
+  }
+}
+
+export function readPendingPayment(orderId) {
+  if (!orderId) return null
+  try {
+    const raw = localStorage.getItem(`culto:payment:${orderId}`)
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
+}
+
+export function clearPendingPayment(orderId) {
+  if (!orderId) return
+  try {
+    localStorage.removeItem(`culto:payment:${orderId}`)
+  } catch {
+    /* ignore */
+  }
+}
+
 // Lê o resultado anexado na URL de retorno.
 // Fluxo novo (nossa API): só vem ?order=<id> — o status REAL é consultado no
 // servidor pela página de retorno (não confiamos no status da URL).

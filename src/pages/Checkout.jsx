@@ -22,7 +22,7 @@ import {
 } from "../components/checkout/icons";
 import { useAuth } from "../context/AuthContext";
 import { byId } from "../data/catalog";
-import { writePending } from "../lib/checkout";
+import { writePending, writePendingPayment } from "../lib/checkout";
 import { api, ApiError, centsToReais } from "../lib/api";
 import { formatBRL, installmentOptions } from "../lib/money";
 import { EASE } from "../lib/motion";
@@ -317,9 +317,11 @@ export default function Checkout() {
     }
 
     try {
-      const { order } = await api.createCheckoutSession(payload);
+      const { order, payment } = await api.createCheckoutSession(payload);
       // Guarda o pack como fallback de exibição na página de retorno.
       writePending(pack.id);
+      // Guarda o Pix/boleto REAL (copia-e-cola, QR) pra a página de retorno exibir.
+      writePendingPayment(order.id, payment);
       // O status REAL é consultado no servidor pela página de retorno (via order id).
       navigate(`/compra/retorno?order=${order.id}`);
     } catch (err) {
@@ -614,40 +616,18 @@ export default function Checkout() {
                 {/* pix */}
                 {method === "pix" && (
                   <motion.div {...fade} className="mt-6">
-                    <div className="flex flex-col items-center gap-4 border border-line bg-ink/40 p-6 sm:flex-row sm:items-center sm:gap-6">
-                      <div className="shrink-0 bg-white p-2.5">
-                        <MockQR seed={`${pack.id}-${total}`} />
-                      </div>
-                      <div>
-                        <h3 className="font-display text-[22px] font-extrabold leading-tight">
-                          Pague com Pix em segundos
-                        </h3>
-                        <p className="mt-1.5 text-[13px] text-ash">
-                          Abra o app do seu banco, escaneie o QR ou use o código
-                          copia e cola. A liberação é na hora.
-                        </p>
-                        <span className="font-util mt-3 inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.14em] text-faint">
-                          <Lock className="h-3.5 w-3.5" /> Expira em 30 min
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="mt-3 flex items-stretch gap-2">
-                      <code className="min-w-0 flex-1 truncate border border-line bg-ink px-3 py-3 text-[12px] text-ash">
-                        {pixCode}
-                      </code>
-                      <button
-                        type="button"
-                        onClick={() => copy(pixCode, "pix")}
-                        className="font-util inline-flex shrink-0 items-center gap-2 border border-line px-4 text-[11px] font-semibold uppercase tracking-[0.14em] text-bone transition-colors hover:border-blood hover:text-blood"
-                      >
-                        {copied === "pix" ? (
-                          <Check className="h-4 w-4" />
-                        ) : (
-                          <Copy className="h-4 w-4" />
-                        )}
-                        {copied === "pix" ? "Copiado" : "Copiar"}
-                      </button>
+                    <div className="border border-line bg-ink/40 p-6">
+                      <h3 className="font-display text-[22px] font-extrabold leading-tight">
+                        Pague com Pix em segundos
+                      </h3>
+                      <p className="mt-1.5 text-[13px] text-ash">
+                        Ao confirmar, geramos o seu Pix na hora — QR Code e código
+                        copia e cola — na próxima tela. Escaneie ou cole no app do
+                        seu banco e a liberação é imediata.
+                      </p>
+                      <span className="font-util mt-3 inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.14em] text-faint">
+                        <Lock className="h-3.5 w-3.5" /> Expira em 30 min
+                      </span>
                     </div>
                   </motion.div>
                 )}
@@ -656,30 +636,14 @@ export default function Checkout() {
                 {method === "boleto" && (
                   <motion.div {...fade} className="mt-6">
                     <div className="border border-line bg-ink/40 p-6">
-                      <div className="bg-white p-3">
-                        <MockBarcode seed={`${pack.id}-${total}`} />
-                      </div>
-                      <div className="mt-3 flex items-stretch gap-2">
-                        <code className="min-w-0 flex-1 truncate border border-line bg-ink px-3 py-3 text-[12px] text-ash">
-                          {boletoLine}
-                        </code>
-                        <button
-                          type="button"
-                          onClick={() => copy(boletoLine, "boleto")}
-                          className="font-util inline-flex shrink-0 items-center gap-2 border border-line px-4 text-[11px] font-semibold uppercase tracking-[0.14em] text-bone transition-colors hover:border-blood hover:text-blood"
-                        >
-                          {copied === "boleto" ? (
-                            <Check className="h-4 w-4" />
-                          ) : (
-                            <Copy className="h-4 w-4" />
-                          )}
-                          {copied === "boleto" ? "Copiado" : "Copiar"}
-                        </button>
-                      </div>
+                      <h3 className="font-display text-[22px] font-extrabold leading-tight">
+                        Pague com boleto
+                      </h3>
                       <p className="mt-3 text-[13px] text-ash">
-                        O boleto vence em 3 dias úteis. A compensação leva até 2
-                        dias e o pack libera automaticamente assim que o
-                        pagamento cair.
+                        Ao confirmar, geramos o boleto na próxima tela — com a linha
+                        digitável e o PDF pra baixar. O vencimento é em 3 dias úteis;
+                        a compensação leva até 2 dias e o pack libera automaticamente
+                        assim que o pagamento cair.
                       </p>
                     </div>
                   </motion.div>
