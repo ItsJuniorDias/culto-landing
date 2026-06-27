@@ -15,14 +15,15 @@ import {
   Lock,
   Shield,
   Check,
+  Copy,
   Chevron,
   ArrowLeft,
   Spinner,
 } from "../components/checkout/icons";
 import { useAuth } from "../context/AuthContext";
 import { byId } from "../data/catalog";
-import { writePending, writePayment } from "../lib/checkout";
-import { api, centsToReais } from "../lib/api";
+import { writePending } from "../lib/checkout";
+import { api, ApiError, centsToReais } from "../lib/api";
 import { formatBRL, installmentOptions } from "../lib/money";
 import { EASE } from "../lib/motion";
 import {
@@ -33,19 +34,108 @@ import {
   maskCardNumber,
   maskExpiry,
   maskCPF,
-  maskPhone,
   cardNumberValid,
   expiryValid,
   cvcValid,
   nameValid,
   emailValid,
   cpfValid,
-  phoneValid,
 } from "../lib/forms";
 
-// Os cupons são validados pela API (fonte da verdade). Veja applyCoupon.
-// Os detalhes de Pix/boleto NÃO são mais simulados aqui: eles vêm na resposta
-// de criação da sessão e são exibidos na página de retorno (/compra/retorno).
+// Os cupons agora são validados pela API (fonte da verdade). Veja applyCoupon.
+
+// ── QR fake (não escaneável, só pra aparência) ──────────────────────────────
+function seededRng(seed) {
+  let s = 0;
+  for (let i = 0; i < seed.length; i++) s = (s * 31 + seed.charCodeAt(i)) >>> 0;
+  return () => {
+    s = (s * 1664525 + 1013904223) >>> 0;
+    return s / 0xffffffff;
+  };
+}
+
+function MockQR({ seed = "culto", size = 25 }) {
+  const cells = useMemo(() => {
+    const rng = seededRng(seed);
+    const inFinder = (x, y) =>
+      (x < 7 && y < 7) || (x >= size - 7 && y < 7) || (x < 7 && y >= size - 7);
+    const out = [];
+    for (let y = 0; y < size; y++)
+      for (let x = 0; x < size; x++)
+        if (!inFinder(x, y) && rng() > 0.52) out.push([x, y]);
+    return out;
+  }, [seed, size]);
+
+  const finder = (fx, fy) => (
+    <g key={`${fx}-${fy}`}>
+      <rect x={fx} y={fy} width="7" height="7" fill="#0E0D10" />
+      <rect x={fx + 1} y={fy + 1} width="5" height="5" fill="#fff" />
+      <rect x={fx + 2} y={fy + 2} width="3" height="3" fill="#0E0D10" />
+    </g>
+  );
+
+  return (
+    <svg
+      viewBox={`0 0 ${size} ${size}`}
+      width="156"
+      height="156"
+      shapeRendering="crispEdges"
+    >
+      <rect width={size} height={size} fill="#fff" />
+      {cells.map(([x, y]) => (
+        <rect
+          key={`${x}-${y}`}
+          x={x}
+          y={y}
+          width="1"
+          height="1"
+          fill="#0E0D10"
+        />
+      ))}
+      {finder(0, 0)}
+      {finder(size - 7, 0)}
+      {finder(0, size - 7)}
+    </svg>
+  );
+}
+
+function MockBarcode({ seed = "culto" }) {
+  const bars = useMemo(() => {
+    const rng = seededRng(seed);
+    const out = [];
+    let x = 0;
+    while (x < 300) {
+      const w = 1 + Math.floor(rng() * 3);
+      out.push({ x, w, fill: rng() > 0.5 });
+      x += w;
+    }
+    return out;
+  }, [seed]);
+
+  return (
+    <svg
+      viewBox="0 0 300 64"
+      className="h-[58px] w-full"
+      preserveAspectRatio="none"
+      shapeRendering="crispEdges"
+    >
+      <rect width="300" height="64" fill="#fff" />
+      {bars.map(
+        (b, i) =>
+          b.fill && (
+            <rect
+              key={i}
+              x={b.x}
+              y="4"
+              width={b.w}
+              height="56"
+              fill="#0E0D10"
+            />
+          ),
+      )}
+    </svg>
+  );
+}
 
 function MethodTab({ active, onClick, icon: Icon, label }) {
   return (
@@ -78,32 +168,6 @@ function SectionTitle({ n, children }) {
   );
 }
 
-// Painel informativo do método sem cartão. O artefato real (QR do Pix, código
-// de barras do boleto) é gerado no servidor ao confirmar e aparece na próxima
-// tela — então aqui só explicamos o que vai acontecer.
-function MethodInfo({ icon: Icon, title, children, note }) {
-  return (
-    <div className="border border-line bg-ink/40 p-6">
-      <div className="flex items-start gap-4">
-        <span className="grid h-11 w-11 shrink-0 place-items-center border border-line text-bone">
-          <Icon className="h-5 w-5" />
-        </span>
-        <div>
-          <h3 className="font-display text-[20px] font-extrabold leading-tight">
-            {title}
-          </h3>
-          <p className="mt-1.5 text-[13px] leading-relaxed text-ash">{children}</p>
-          {note && (
-            <span className="font-util mt-3 inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.14em] text-faint">
-              <Lock className="h-3.5 w-3.5" /> {note}
-            </span>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function Checkout() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -114,13 +178,14 @@ export default function Checkout() {
   // ── Estado (todos os hooks antes de qualquer return) ──
   const [method, setMethod] = useState("card");
   const [email, setEmail] = useState(user?.email || "");
+  const [name, setName] = useState(user?.name || "");
   const [cpf, setCpf] = useState("");
-  const [phone, setPhone] = useState("");
   const [card, setCard] = useState({ number: "", name: "", exp: "", cvc: "" });
   const [installments, setInstallments] = useState(1);
   const [touched, setTouched] = useState({});
   const [status, setStatus] = useState("idle");
   const [summaryOpen, setSummaryOpen] = useState(false);
+  const [copied, setCopied] = useState("");
 
   // cupom — validado e precificado pela API (centavos → reais para exibir)
   const [couponInput, setCouponInput] = useState("");
@@ -129,12 +194,16 @@ export default function Checkout() {
   const [couponError, setCouponError] = useState("");
   const [couponLoading, setCouponLoading] = useState(false);
 
-  // erro ao criar a sessão de checkout (ex.: API fora do ar, cartão desabilitado)
+  // erro ao criar a sessão de checkout (ex.: API fora do ar)
   const [submitError, setSubmitError] = useState("");
 
   const subtotal = pack?.priceValue || 0;
-  const discount = serverPricing ? centsToReais(serverPricing.discountCents) : 0;
-  const total = serverPricing ? centsToReais(serverPricing.totalCents) : subtotal;
+  const discount = serverPricing
+    ? centsToReais(serverPricing.discountCents)
+    : 0;
+  const total = serverPricing
+    ? centsToReais(serverPricing.totalCents)
+    : subtotal;
 
   const brand = detectBrand(card.number);
   const installmentList = useMemo(() => installmentOptions(total), [total]);
@@ -143,14 +212,16 @@ export default function Checkout() {
 
   const errors = {
     email: emailValid(email) ? "" : "E-mail inválido",
+    fullName: nameValid(name) ? "" : "Informe nome e sobrenome",
     cpf: cpfValid(cpf) ? "" : "CPF inválido",
-    phone: phoneValid(phone) ? "" : "Telefone inválido (com DDD)",
-    number: cardNumberValid(card.number, brand) ? "" : "Número do cartão inválido",
+    number: cardNumberValid(card.number, brand)
+      ? ""
+      : "Número do cartão inválido",
     name: nameValid(card.name) ? "" : "Informe nome e sobrenome",
     exp: expiryValid(card.exp) ? "" : "Validade inválida",
     cvc: cvcValid(card.cvc, brand) ? "" : "CVV inválido",
   };
-  const baseValid = !errors.email && !errors.cpf && !errors.phone;
+  const baseValid = !errors.email && !errors.fullName && !errors.cpf;
   const isValid =
     method === "card"
       ? baseValid &&
@@ -184,7 +255,7 @@ export default function Checkout() {
       setServerPricing(pricing);
     } catch (err) {
       const msg =
-        err?.code === "COUPON_INVALID"
+        err instanceof ApiError && err.code === "COUPON_INVALID"
           ? "Cupom inválido ou expirado"
           : (err?.message ?? "Não foi possível validar o cupom");
       setCouponError(msg);
@@ -201,11 +272,21 @@ export default function Checkout() {
     setCouponInput("");
   };
 
+  const copy = (text, which) => {
+    try {
+      navigator.clipboard?.writeText(text);
+    } catch {
+      /* clipboard indisponível */
+    }
+    setCopied(which);
+    setTimeout(() => setCopied(""), 1800);
+  };
+
   const submit = async (e) => {
     e.preventDefault();
     if (status === "processing") return;
 
-    const t = { email: true, cpf: true, phone: true };
+    const t = { email: true, fullName: true, cpf: true };
     if (method === "card")
       Object.assign(t, { number: true, name: true, exp: true, cvc: true });
     setTouched(t);
@@ -214,56 +295,29 @@ export default function Checkout() {
     setStatus("processing");
     setSubmitError("");
 
-    // Monta o payload pra API. CPF/telefone vão só com dígitos; o preço NÃO é
-    // enviado — o servidor recalcula a partir do pack + cupom (cliente não dita
-    // valor). O telefone é obrigatório na PradaPay.
+    // Monta o payload pra API. O CPF vai só com dígitos; o preço NÃO é enviado
+    // — o servidor recalcula a partir do pack + cupom (cliente não dita valor).
     const payload = {
       packId: pack.id,
       paymentMethod: method,
-      customer: {
-        email: email.trim(),
-        cpf: onlyDigits(cpf),
-        phone: onlyDigits(phone),
-      },
+      customer: { email: email.trim(), cpf: onlyDigits(cpf), name: name.trim() },
       ...(appliedCoupon ? { couponCode: appliedCoupon.code } : {}),
     };
 
     if (method === "card") {
-      const digits = onlyDigits(card.number);
-      const [mm = "", yy = ""] = card.exp.split("/");
+      // PCI: em produção o cartão é tokenizado pelo SDK do gateway e só o token
+      // trafega. Aqui geramos um token de demonstração (o PAN cru não é enviado).
+      const last4 = onlyDigits(card.number).slice(-4);
+      payload.cardToken = `tok_mock_${last4 || "0000"}_${Date.now()}`;
       payload.installments = selN;
-      if (nameValid(card.name)) payload.customer.name = card.name.trim();
-
-      // Cartão CRU — exigido pela PradaPay (não há tokenização). Só é usado pelo
-      // backend quando PRADAPAY_ENABLE_CARD=true; caso contrário ele recusa com
-      // uma mensagem clara. PCI-DSS: ver README do backend.
-      payload.card = {
-        holder: card.name.trim(),
-        number: digits,
-        expMonth: mm.trim(),
-        expYear: yy.trim(),
-        cvv: onlyDigits(card.cvc),
-      };
-      // Token de demonstração — caminho usado pelo gateway mock (sem PAN cru).
-      payload.cardToken = `tok_mock_${digits.slice(-4) || "0000"}_${Date.now()}`;
     }
 
     try {
-      const { order, payment } = await api.createCheckoutSession(payload);
-      // Fallbacks de exibição na página de retorno (resistem a refresh).
+      const { order } = await api.createCheckoutSession(payload);
+      // Guarda o pack como fallback de exibição na página de retorno.
       writePending(pack.id);
-      writePayment(order.id, payment);
-
-      // Fluxo redirect (cartão/boleto na PradaPay): concluir no ambiente do
-      // adquirente/banco. Ao voltar, a back_url cai em /compra/retorno.
-      if (payment?.redirectUrl) {
-        window.location.href = payment.redirectUrl;
-        return;
-      }
-
-      // Pix / boleto inline (ou mock já aprovado): a página de retorno exibe o
-      // QR/linha e faz polling do status real no servidor.
-      navigate(`/compra/retorno?order=${order.id}`, { state: { payment } });
+      // O status REAL é consultado no servidor pela página de retorno (via order id).
+      navigate(`/compra/retorno?order=${order.id}`);
     } catch (err) {
       setStatus("idle");
       setSubmitError(
@@ -277,7 +331,7 @@ export default function Checkout() {
     method === "card"
       ? `Pagar ${formatBRL(total)}`
       : method === "pix"
-        ? "Gerar Pix"
+        ? "Confirmar pagamento"
         : "Gerar boleto";
   const installmentLabel =
     method === "card"
@@ -285,6 +339,11 @@ export default function Checkout() {
       : method === "pix"
         ? "Pix à vista · aprovação na hora"
         : "Boleto à vista · vence em 3 dias";
+
+  const pixCode = `00020126580014br.gov.bcb.pix0136culto-${pack.id}-a1b2c3d4e5520400005303986540${total.toFixed(2)}5802BR5913CULTO ASSETS6009SAO PAULO62070503***6304E2CA`;
+  const boletoLine = `34191.790010 ${String(Math.round(total * 100))
+    .padStart(5, "0")
+    .slice(0, 5)}.510047 91020.150008 8 ${Math.floor(Date.now() / 1e7)}`;
 
   const summary = (
     <OrderSummary
@@ -366,22 +425,33 @@ export default function Checkout() {
               {/* 01 — dados */}
               <section className="border border-line bg-panel p-6 sm:p-7">
                 <SectionTitle n="01">Seus dados</SectionTitle>
+                <div className="mb-4">
+                  <CheckoutInput
+                    label="Nome completo"
+                    value={name}
+                    onChange={setName}
+                    onBlur={() => blur("fullName")}
+                    show={touched.fullName}
+                    error={errors.fullName}
+                    placeholder="Seu nome completo"
+                    autoComplete="name"
+                    hint="como no documento"
+                  />
+                </div>
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="sm:col-span-2">
-                    <CheckoutInput
-                      label="E-mail"
-                      type="email"
-                      value={email}
-                      onChange={setEmail}
-                      onBlur={() => blur("email")}
-                      show={touched.email}
-                      error={errors.email}
-                      placeholder="voce@email.com"
-                      autoComplete="email"
-                      inputMode="email"
-                      hint="recibo e acesso"
-                    />
-                  </div>
+                  <CheckoutInput
+                    label="E-mail"
+                    type="email"
+                    value={email}
+                    onChange={setEmail}
+                    onBlur={() => blur("email")}
+                    show={touched.email}
+                    error={errors.email}
+                    placeholder="voce@email.com"
+                    autoComplete="email"
+                    inputMode="email"
+                    hint="recibo e acesso"
+                  />
                   <CheckoutInput
                     label="CPF"
                     value={cpf}
@@ -392,19 +462,6 @@ export default function Checkout() {
                     placeholder="000.000.000-00"
                     inputMode="numeric"
                     maxLength={14}
-                  />
-                  <CheckoutInput
-                    label="Celular"
-                    value={phone}
-                    onChange={(v) => setPhone(maskPhone(v))}
-                    onBlur={() => blur("phone")}
-                    show={touched.phone}
-                    error={errors.phone}
-                    placeholder="(11) 90000-0000"
-                    inputMode="tel"
-                    autoComplete="tel"
-                    maxLength={16}
-                    hint="confirmação do pagamento"
                   />
                 </div>
               </section>
@@ -442,7 +499,10 @@ export default function Checkout() {
                       value={card.number}
                       onChange={(v) => {
                         const b = detectBrand(v);
-                        setCard((c) => ({ ...c, number: maskCardNumber(v, b) }));
+                        setCard((c) => ({
+                          ...c,
+                          number: maskCardNumber(v, b),
+                        }));
                       }}
                       onBlur={() => blur("number")}
                       show={touched.number}
@@ -535,27 +595,74 @@ export default function Checkout() {
                 {/* pix */}
                 {method === "pix" && (
                   <motion.div {...fade} className="mt-6">
-                    <MethodInfo
-                      icon={QrCode}
-                      title="Pagamento via Pix"
-                      note="QR válido por 30 min"
-                    >
-                      Ao confirmar, geramos o QR Code e o código copia e cola. É
-                      só abrir o app do seu banco, pagar, e o pack libera na hora
-                      — esta tela acompanha a confirmação sozinha.
-                    </MethodInfo>
+                    <div className="flex flex-col items-center gap-4 border border-line bg-ink/40 p-6 sm:flex-row sm:items-center sm:gap-6">
+                      <div className="shrink-0 bg-white p-2.5">
+                        <MockQR seed={`${pack.id}-${total}`} />
+                      </div>
+                      <div>
+                        <h3 className="font-display text-[22px] font-extrabold leading-tight">
+                          Pague com Pix em segundos
+                        </h3>
+                        <p className="mt-1.5 text-[13px] text-ash">
+                          Abra o app do seu banco, escaneie o QR ou use o código
+                          copia e cola. A liberação é na hora.
+                        </p>
+                        <span className="font-util mt-3 inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.14em] text-faint">
+                          <Lock className="h-3.5 w-3.5" /> Expira em 30 min
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 flex items-stretch gap-2">
+                      <code className="min-w-0 flex-1 truncate border border-line bg-ink px-3 py-3 text-[12px] text-ash">
+                        {pixCode}
+                      </code>
+                      <button
+                        type="button"
+                        onClick={() => copy(pixCode, "pix")}
+                        className="font-util inline-flex shrink-0 items-center gap-2 border border-line px-4 text-[11px] font-semibold uppercase tracking-[0.14em] text-bone transition-colors hover:border-blood hover:text-blood"
+                      >
+                        {copied === "pix" ? (
+                          <Check className="h-4 w-4" />
+                        ) : (
+                          <Copy className="h-4 w-4" />
+                        )}
+                        {copied === "pix" ? "Copiado" : "Copiar"}
+                      </button>
+                    </div>
                   </motion.div>
                 )}
 
                 {/* boleto */}
                 {method === "boleto" && (
                   <motion.div {...fade} className="mt-6">
-                    <MethodInfo icon={Barcode} title="Pagamento via boleto">
-                      Ao confirmar, geramos o boleto com código de barras e PDF
-                      para download. Vence em 3 dias úteis; a compensação leva
-                      até 2 dias e o pack libera automaticamente quando o
-                      pagamento cair.
-                    </MethodInfo>
+                    <div className="border border-line bg-ink/40 p-6">
+                      <div className="bg-white p-3">
+                        <MockBarcode seed={`${pack.id}-${total}`} />
+                      </div>
+                      <div className="mt-3 flex items-stretch gap-2">
+                        <code className="min-w-0 flex-1 truncate border border-line bg-ink px-3 py-3 text-[12px] text-ash">
+                          {boletoLine}
+                        </code>
+                        <button
+                          type="button"
+                          onClick={() => copy(boletoLine, "boleto")}
+                          className="font-util inline-flex shrink-0 items-center gap-2 border border-line px-4 text-[11px] font-semibold uppercase tracking-[0.14em] text-bone transition-colors hover:border-blood hover:text-blood"
+                        >
+                          {copied === "boleto" ? (
+                            <Check className="h-4 w-4" />
+                          ) : (
+                            <Copy className="h-4 w-4" />
+                          )}
+                          {copied === "boleto" ? "Copiado" : "Copiar"}
+                        </button>
+                      </div>
+                      <p className="mt-3 text-[13px] text-ash">
+                        O boleto vence em 3 dias úteis. A compensação leva até 2
+                        dias e o pack libera automaticamente assim que o
+                        pagamento cair.
+                      </p>
+                    </div>
                   </motion.div>
                 )}
               </section>
@@ -589,7 +696,8 @@ export default function Checkout() {
                   </span>
                 </div>
                 <p className="font-util mt-3 text-center text-[10px] uppercase tracking-[0.12em] text-faint/70">
-                  Pagamento processado com segurança pelo nosso gateway
+                  Checkout conectado à API — gateway em modo demonstração, nada
+                  é cobrado
                 </p>
               </div>
             </form>

@@ -57,16 +57,6 @@ export function maskCPF(value) {
     .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
 }
 
-// Telefone BR com DDD. Fixo (10 dígitos): (11) 1234-5678.
-// Celular (11 dígitos): (11) 91234-5678. A PradaPay exige o telefone.
-export function maskPhone(value) {
-  const n = onlyDigits(value).slice(0, 11)
-  if (n.length <= 2) return n.replace(/(\d{1,2})/, '($1')
-  if (n.length <= 6) return `(${n.slice(0, 2)}) ${n.slice(2)}`
-  if (n.length <= 10) return `(${n.slice(0, 2)}) ${n.slice(2, 6)}-${n.slice(6)}`
-  return `(${n.slice(0, 2)}) ${n.slice(2, 7)}-${n.slice(7)}`
-}
-
 // ── Validações ──────────────────────────────────────────────────────────────
 export function luhnValid(value) {
   const n = onlyDigits(value)
@@ -110,12 +100,6 @@ export const cvcValid = (value, brand) => onlyDigits(value).length === cvcLength
 export const nameValid = (value) => (value || '').trim().split(/\s+/).filter(Boolean).length >= 2
 
 export const emailValid = (value) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test((value || '').trim())
-
-// DDD (2) + número (8 fixo ou 9 celular) = 10 ou 11 dígitos.
-export const phoneValid = (value) => {
-  const n = onlyDigits(value)
-  return n.length === 10 || n.length === 11
-}
 
 export function cpfValid(value) {
   const n = onlyDigits(value)

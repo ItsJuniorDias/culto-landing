@@ -1,18 +1,13 @@
-// Estado da compra no navegador, entre o checkout e a página de retorno.
+// Fluxo de compra via Mercado Pago (links de pagamento).
 //
-// Fluxo atual (nossa API + PradaPay): ao criar a sessão de checkout guardamos
-// (1) qual pack está sendo comprado e (2) os dados de pagamento que só vêm na
-// resposta de criação (QR/copia-e-cola do Pix, boleto) — porque o GET de status
-// devolve só o status, não esses detalhes. Assim a página de retorno consegue
-// exibir o Pix/boleto mesmo após um refresh, e faz polling até confirmar.
-//
-// O fluxo legado (links do Mercado Pago) ainda é tolerado no parseReturn, mas
-// não é mais o caminho principal.
+// Como não existe servidor, guardamos no navegador qual pack está sendo
+// comprado ANTES de mandar o usuário pro Mercado Pago. Quando ele volta pela
+// back_url (/compra/retorno), a página de retorno lê esse dado + o status que
+// o Mercado Pago adiciona na URL e libera o pack.
 
 import { getPaymentLink } from '../data/payments'
 
 const PENDING_KEY = 'culto:pendingPurchase'
-const PAYMENT_KEY = 'culto:payment' // + ':<orderId>'
 
 // Inicia o checkout: lembra o pack e redireciona pro link do Mercado Pago.
 // Retorna { ok, reason } — se reason === 'no-link', o link ainda não foi colado.
@@ -54,37 +49,6 @@ export function readPending() {
 export function clearPending() {
   try {
     localStorage.removeItem(PENDING_KEY)
-  } catch {
-    /* ignore */
-  }
-}
-
-// ── Detalhes do pagamento (Pix/boleto) por pedido ───────────────────────────
-// Só vêm na resposta de criação da sessão; guardamos por orderId pra a página
-// de retorno reexibir o QR/linha mesmo após refresh (o GET de status não os traz).
-export function writePayment(orderId, payment) {
-  if (!orderId || !payment) return
-  try {
-    localStorage.setItem(`${PAYMENT_KEY}:${orderId}`, JSON.stringify(payment))
-  } catch {
-    /* storage indisponível — a página de retorno cai no estado sem detalhes */
-  }
-}
-
-export function readPayment(orderId) {
-  if (!orderId) return null
-  try {
-    const raw = localStorage.getItem(`${PAYMENT_KEY}:${orderId}`)
-    return raw ? JSON.parse(raw) : null
-  } catch {
-    return null
-  }
-}
-
-export function clearPayment(orderId) {
-  if (!orderId) return
-  try {
-    localStorage.removeItem(`${PAYMENT_KEY}:${orderId}`)
   } catch {
     /* ignore */
   }
