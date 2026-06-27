@@ -12,6 +12,7 @@ import { downloadFile } from '../lib/download'
 import { parseReturn, readPending, clearPending, readPendingPayment, clearPendingPayment, isApproved, isPending } from '../lib/checkout'
 import { api } from '../lib/api'
 import { EASE } from '../lib/motion'
+import QRCode from 'react-qr-code'
 
 export default function CheckoutReturn() {
   const reduce = useReducedMotion()
@@ -277,12 +278,10 @@ export default function CheckoutReturn() {
   if (r.kind === 'pending' && payment?.pix) {
     paymentBlock = (
       <div className="mt-6 border border-line bg-ink/60 p-5">
-        {payment.pix.qrCodeImage && (
-          <img
-            src={payment.pix.qrCodeImage}
-            alt="QR Code do Pix"
-            className="mx-auto mb-4 h-44 w-44 bg-white p-2"
-          />
+        {payment.pix.copyPaste && (
+          <div className="mx-auto mb-4 w-fit bg-white p-3">
+            <QRCode value={payment.pix.copyPaste} size={172} />
+          </div>
         )}
         <p className="font-util mb-2 text-[11px] uppercase tracking-[0.2em] text-faint">
           Pix copia e cola
