@@ -14,6 +14,20 @@ export const Lock = (props) => (
   </svg>
 )
 
+export const Phone = (props) => (
+  <svg {...base} {...props}>
+    <path d="M6 3.5h3l1.5 4.5-2 1.5a12 12 0 0 0 5.5 5.5l1.5-2 4.5 1.5v3a2 2 0 0 1-2 2A16.5 16.5 0 0 1 4 5.5a2 2 0 0 1 2-2Z" />
+  </svg>
+)
+
+export const ExternalLink = (props) => (
+  <svg {...base} {...props}>
+    <path d="M14 4h6v6" />
+    <path d="M20 4 10 14" />
+    <path d="M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5" />
+  </svg>
+)
+
 export const Shield = (props) => (
   <svg {...base} {...props}>
     <path d="M12 3l7 3v5c0 4.4-3 7.6-7 9-4-1.4-7-4.6-7-9V6l7-3z" />

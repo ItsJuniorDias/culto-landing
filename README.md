@@ -23,7 +23,7 @@ npm run build    # build de produção em /dist
 npm run preview  # serve a build localmente
 ```
 
-A URL da API vem de `VITE_API_URL` (veja `.env.example`); o padrão já aponta para `http://localhost:3333`. O CORS do backend já libera `http://localhost:5173`.
+A URL da API vem de `VITE_API_URL` (veja `.env.example`). O padrão já aponta para o backend publicado (`https://culto-backend.onrender.com`); para rodar contra um backend local, troque por `http://localhost:3333`. **Importante:** o `CORS_ORIGIN` do backend precisa listar a origem do front (em dev, `http://localhost:5173`; em produção, a URL onde o front é publicado), senão o navegador bloqueia as chamadas.
 
 ---
 
@@ -32,9 +32,9 @@ A URL da API vem de `VITE_API_URL` (veja `.env.example`); o padrão já aponta p
 O fluxo de pagamento foi ligado ao backend. O que mudou:
 
 - **`src/lib/api.js`** — cliente da API (fetch + tratamento de erro). Toda chamada ao servidor passa por aqui. Base configurável via `VITE_API_URL`.
-- **Checkout (`src/pages/Checkout.jsx`)** — ao aplicar um **cupom**, chama `POST /api/coupons/validate` e usa o preço que o servidor devolve. Ao finalizar, chama `POST /api/checkout/sessions` (o servidor cria o pedido + a cobrança e **recalcula o preço** — o cliente não dita valor) e redireciona para `/compra/retorno?order=<id>`.
-- **Retorno (`src/pages/CheckoutReturn.jsx`)** — consulta `GET /api/checkout/sessions/:id` para saber o **status real** (não confia mais no status da URL). Pix/boleto pendente faz *polling* até confirmar; no modo dev há um botão para **simular a confirmação** (dispara o webhook do gateway via `POST /api/dev/simulate-webhook`).
-- **Cartão (PCI):** o número cru **não** é enviado. O front manda um *token* de cartão de demonstração — em produção, troque pela tokenização do SDK do gateway (PradaPay), mantendo o PAN fora do seu servidor.
+- **Checkout (`src/pages/Checkout.jsx`)** — coleta e-mail, CPF e **telefone** (obrigatório na PradaPay). Ao aplicar um **cupom**, chama `POST /api/coupons/validate` e usa o preço que o servidor devolve. Ao finalizar, chama `POST /api/checkout/sessions` (o servidor cria o pedido + a cobrança e **recalcula o preço** — o cliente não dita valor). Se a resposta trouxer `redirectUrl` (fluxo de cartão/boleto da PradaPay), o cliente é mandado pra concluir lá; caso contrário, vai para `/compra/retorno?order=<id>` com os dados do Pix/boleto.
+- **Retorno (`src/pages/CheckoutReturn.jsx`)** — exibe o **QR Code do Pix** (vindo da criação da cobrança) ou o **boleto** (linha digitável + PDF) e consulta `GET /api/checkout/sessions/:id` para saber o **status real** (não confia no status da URL), com *polling* até confirmar. Os dados do Pix/boleto são guardados por pedido no `localStorage`, então sobrevivem a um refresh. No modo dev há um botão para **simular a confirmação** (só com o gateway mock, via `POST /api/dev/simulate-webhook`).
+- **Cartão (PCI):** o front envia os dados do cartão como a PradaPay exige (ela **não** tokeniza). No backend isso é **opt-in** (`PRADAPAY_ENABLE_CARD=true`) — com o flag desligado, o cartão é recusado e a mensagem aparece no checkout. O fluxo recomendado é **Pix**. Detalhes de PCI no README do backend.
 
 A liberação do pack na biblioteca continua no `localStorage` (via `AuthContext.purchase`), acionada quando o servidor confirma o pagamento — porque a API cobre só o checkout, não a conta do usuário.
 
@@ -62,7 +62,9 @@ Contas novas (cadastro) começam só com o pack gratuito e desbloqueiam o resto 
 
 ---
 
-## 💳 Mercado Pago (configurar depois — só colar os links)
+## 💳 Mercado Pago (legado/opcional — só colar os links)
+
+> O checkout principal agora é a **API CULTO + PradaPay** (seção acima). Este caminho de links do Mercado Pago continua **funcionando como alternativa** (a página de retorno ainda entende o status que o MP anexa na URL), mas não é necessário se você usa o backend. Pule esta seção se for usar só a PradaPay.
 
 A estrutura já está pronta. Você só precisa criar os links e colá-los em **`src/data/payments.js`**.
 
