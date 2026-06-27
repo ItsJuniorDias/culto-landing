@@ -34,12 +34,14 @@ import {
   maskCardNumber,
   maskExpiry,
   maskCPF,
+  maskPhone,
   cardNumberValid,
   expiryValid,
   cvcValid,
   nameValid,
   emailValid,
   cpfValid,
+  phoneValid,
 } from "../lib/forms";
 
 // Os cupons agora são validados pela API (fonte da verdade). Veja applyCoupon.
@@ -179,6 +181,7 @@ export default function Checkout() {
   const [method, setMethod] = useState("card");
   const [email, setEmail] = useState(user?.email || "");
   const [name, setName] = useState(user?.name || "");
+  const [phone, setPhone] = useState(user?.phone || "");
   const [cpf, setCpf] = useState("");
   const [card, setCard] = useState({ number: "", name: "", exp: "", cvc: "" });
   const [installments, setInstallments] = useState(1);
@@ -213,6 +216,7 @@ export default function Checkout() {
   const errors = {
     email: emailValid(email) ? "" : "E-mail inválido",
     fullName: nameValid(name) ? "" : "Informe nome e sobrenome",
+    phone: phoneValid(phone) ? "" : "Telefone inválido (com DDD)",
     cpf: cpfValid(cpf) ? "" : "CPF inválido",
     number: cardNumberValid(card.number, brand)
       ? ""
@@ -221,7 +225,7 @@ export default function Checkout() {
     exp: expiryValid(card.exp) ? "" : "Validade inválida",
     cvc: cvcValid(card.cvc, brand) ? "" : "CVV inválido",
   };
-  const baseValid = !errors.email && !errors.fullName && !errors.cpf;
+  const baseValid = !errors.email && !errors.fullName && !errors.phone && !errors.cpf;
   const isValid =
     method === "card"
       ? baseValid &&
@@ -286,7 +290,7 @@ export default function Checkout() {
     e.preventDefault();
     if (status === "processing") return;
 
-    const t = { email: true, fullName: true, cpf: true };
+    const t = { email: true, fullName: true, phone: true, cpf: true };
     if (method === "card")
       Object.assign(t, { number: true, name: true, exp: true, cvc: true });
     setTouched(t);
@@ -300,7 +304,7 @@ export default function Checkout() {
     const payload = {
       packId: pack.id,
       paymentMethod: method,
-      customer: { email: email.trim(), cpf: onlyDigits(cpf), name: name.trim() },
+      customer: { email: email.trim(), cpf: onlyDigits(cpf), name: name.trim(), phone: onlyDigits(phone) },
       ...(appliedCoupon ? { couponCode: appliedCoupon.code } : {}),
     };
 
@@ -462,6 +466,21 @@ export default function Checkout() {
                     placeholder="000.000.000-00"
                     inputMode="numeric"
                     maxLength={14}
+                  />
+                </div>
+                <div className="mt-4">
+                  <CheckoutInput
+                    label="Celular / WhatsApp"
+                    value={phone}
+                    onChange={(v) => setPhone(maskPhone(v))}
+                    onBlur={() => blur("phone")}
+                    show={touched.phone}
+                    error={errors.phone}
+                    placeholder="(11) 99999-9999"
+                    inputMode="tel"
+                    autoComplete="tel"
+                    maxLength={16}
+                    hint="confirmação do pagamento"
                   />
                 </div>
               </section>
