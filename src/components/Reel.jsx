@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import SectionHead from "./SectionHead";
 import Reveal from "./Reveal";
+import Button from "./Button";
 import { Halftone } from "./Decor";
 import { reel } from "../data/content";
 import { scaleIn, fadeUp, staggerContainer, viewportOnce } from "../lib/motion";
@@ -155,6 +156,41 @@ export default function Reel() {
             </motion.li>
           ))}
         </motion.ul>
+
+        {/* CTA de conversão — captura o interesse no pico, logo após o vídeo.
+           Leva à página do Bundle (entrada do checkout), pública e sem
+           barreira de login. */}
+        <Reveal
+          delay={0.1}
+          className="mx-auto mt-[52px] max-w-[680px] text-center md:mt-16"
+        >
+          <p className="font-util text-[11px] uppercase tracking-[0.2em] text-blood">
+            Gostou do que viu?
+          </p>
+          <h3
+            className="font-display mx-auto mt-3.5 max-w-[16ch] font-extrabold leading-[0.98]"
+            style={{ fontSize: "clamp(26px,3.4vw,38px)" }}
+          >
+            Coloque esses assets na sua próxima entrega.
+          </h3>
+
+          <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Button to="/pack/bundle" className="w-full sm:w-auto">
+              Quero o Bundle completo ↗
+            </Button>
+            <Button href="#packs" variant="ghost" className="w-full sm:w-auto">
+              Ver todos os packs
+            </Button>
+          </div>
+
+          <p className="font-util mt-5 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-[11px] uppercase tracking-[0.14em] text-faint">
+            <span>Pagamento único</span>
+            <span aria-hidden="true" className="h-[3px] w-[3px] bg-blood" />
+            <span>Pix, cartão ou boleto</span>
+            <span aria-hidden="true" className="h-[3px] w-[3px] bg-blood" />
+            <span>7 dias de garantia</span>
+          </p>
+        </Reveal>
       </div>
     </section>
   );
