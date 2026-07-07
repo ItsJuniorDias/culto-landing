@@ -133,12 +133,21 @@ export const faqs = [
 
 export const footerCols = [
   {
-    h: 'Produto',
+    h: 'Packs',
     links: [
       { label: 'Design Pack', href: '#packs' },
       { label: 'Motion Pack', href: '#packs' },
       { label: 'Bundle Completo', href: '#packs' },
       { label: 'Catálogo', href: '#inside' },
+    ],
+  },
+  {
+    h: 'Serviços',
+    links: [
+      { label: 'Criação de sites', href: '#sites' },
+      { label: 'Vídeo & motion', href: '#motion' },
+      { label: 'Pedir orçamento', href: '#sites' },
+      { label: 'Projetos no ar', href: '#sites' },
     ],
   },
   {
@@ -162,12 +171,27 @@ export const footerCols = [
 ]
 
 export const navLinks = [
-  { label: 'Vídeo', href: '#reel' },
   { label: 'Packs', href: '#packs' },
-  { label: 'O que vem', href: '#inside' },
+  { label: 'Sites', href: '#sites' },
+  { label: 'Motion', href: '#motion' },
+  { label: 'Catálogo', href: '#inside' },
   { label: 'Quem usa', href: '#voices' },
   { label: 'Dúvidas', href: '#faq' },
 ]
+
+// ── Contato / orçamentos ─────────────────────────────────────────────────────
+// Usado pelos CTAs das seções de serviço (Sites e Motion).
+// TROQUE os dois valores abaixo:
+//   whatsapp → seu número com DDI + DDD, só dígitos. Ex.: 5519998877665
+//   email    → seu e-mail de contato
+export const contact = {
+  whatsapp: '5519999999999', // ← TROQUE pelo seu número (DDI+DDD, só números)
+  email: 'contato@cultododesigner.com.br', // ← TROQUE pelo seu e-mail
+}
+
+// Monta um link wa.me já com a mensagem preenchida.
+export const waLink = (msg = 'Oi! Vim pelo site do Culto e quero um orçamento.') =>
+  `https://wa.me/${contact.whatsapp}?text=${encodeURIComponent(msg)}`
 
 // ── Showreel ────────────────────────────────────────────────────────────────
 // Troque pelos dados do seu vídeo. Duas formas de usar:
@@ -187,3 +211,149 @@ export const reel = {
     { k: '100%', v: 'licença comercial' },
   ],
 }
+
+// ── Serviços: Criação de sites ───────────────────────────────────────────────
+// Vitrine de projeto real usada como prova social da seção de sites.
+export const sitesShowcase = {
+  badge: 'Projeto no ar',
+  url: 'pedagogy.com.br',
+  live: 'https://pedagogy.com.br',
+  name: 'Pedagogy',
+  kicker: 'App de leitura infantil',
+  headline: 'Stories that teach kids to read',
+  sub: 'Fonics, 50+ histórias e joguinhos pra crianças de 2 a 10 anos.',
+  // pílulas mostradas dentro do mock do navegador (a "cara" do site)
+  pills: ['2–10 anos', '7 idiomas', 'Sem anúncios', '50+ histórias'],
+  cta: 'Download grátis',
+  // o que foi entregue nesse projeto
+  bullets: [
+    'Landing page + funil de conversão do zero',
+    'i18n em 7 idiomas e design responsivo',
+    'Meta Pixel + CAPI server-side (atribuição fechada)',
+    'Deploy, domínio e performance no capricho',
+  ],
+  stack: ['React', 'Vite', 'Fastify', 'RevenueCat', 'Meta CAPI'],
+}
+
+export const siteTiers = [
+  {
+    id: 'landing',
+    kind: 'Página única',
+    name: 'Landing',
+    from: 'a partir de',
+    price: '2.900',
+    meta: 'Entrega em ~2 semanas',
+    featured: false,
+    ctaVariant: 'ghost',
+    quote: 'Oi! Quero um orçamento de uma landing page (plano Landing).',
+    feats: [
+      { t: 'Página única de alta conversão', on: true },
+      { t: 'Design exclusivo + animação (Framer Motion)', on: true },
+      { t: 'Responsivo, SEO técnico e performance', on: true },
+      { t: 'Deploy + domínio configurado', on: true },
+      { t: '2 rodadas de ajuste inclusas', on: true },
+    ],
+  },
+  {
+    id: 'institucional',
+    kind: 'Multi-página',
+    name: 'Institucional',
+    from: 'a partir de',
+    price: '6.900',
+    meta: 'Entrega em ~3 a 4 semanas',
+    featured: true,
+    tag: 'Mais pedido',
+    ctaVariant: 'primary',
+    quote: 'Oi! Quero um orçamento de um site institucional (plano Institucional).',
+    feats: [
+      { t: 'Até 6 páginas sob medida', on: true, strong: true },
+      { t: 'Blog / CMS leve pra você editar sozinho', on: true },
+      { t: 'Integrações: WhatsApp, formulários, analytics', on: true },
+      { t: 'SEO on-page + Core Web Vitals no verde', on: true },
+      { t: '3 rodadas de ajuste inclusas', on: true },
+    ],
+  },
+  {
+    id: 'sob-medida',
+    kind: 'Web app',
+    name: 'Sob medida',
+    from: 'a partir de',
+    price: 'Sob consulta',
+    isText: true,
+    meta: 'Escopo fechado junto com você',
+    featured: false,
+    ctaVariant: 'ghost',
+    quote: 'Oi! Quero um orçamento de um sistema web sob medida (plano Sob medida).',
+    feats: [
+      { t: 'Sistema completo: login, painel, pagamentos', on: true },
+      { t: 'Backend próprio + banco de dados', on: true },
+      { t: 'Integrações de API e automações', on: true },
+      { t: 'Escala, monitoramento e manutenção', on: true },
+      { t: 'A partir de R$ 14.900, conforme o escopo', on: true },
+    ],
+  },
+]
+
+// ── Serviços: Vídeo & Motion ─────────────────────────────────────────────────
+// `fill` (0–1) alimenta a barra de timeline no topo do card = duração/porte.
+export const motionTiers = [
+  {
+    id: 'social',
+    kind: 'Reels · Shorts · TikTok',
+    name: 'Social',
+    from: 'a partir de',
+    price: '1.200',
+    meta: 'Até 20s · entrega em ~5 dias',
+    fill: 0.28,
+    featured: false,
+    ctaVariant: 'ghost',
+    quote: 'Oi! Quero um orçamento de motion pra social (plano Social).',
+    feats: [
+      { t: 'Formato vertical 9:16 pronto pro feed', on: true },
+      { t: 'Animação de texto + elementos gráficos', on: true },
+      { t: 'Trilha e SFX sincronizados', on: true },
+      { t: 'Legenda embutida', on: true },
+      { t: '2 rodadas de ajuste inclusas', on: true },
+    ],
+  },
+  {
+    id: 'explainer',
+    kind: 'Explainer · Promo',
+    name: 'Explainer',
+    from: 'a partir de',
+    price: '3.900',
+    meta: 'Até 60s · roteiro + storyboard',
+    fill: 0.62,
+    featured: true,
+    tag: 'Mais pedido',
+    ctaVariant: 'primary',
+    quote: 'Oi! Quero um orçamento de um vídeo explainer/promo (plano Explainer).',
+    feats: [
+      { t: 'Roteiro e storyboard inclusos', on: true, strong: true },
+      { t: 'Ilustração e personagem exclusivos', on: true },
+      { t: 'Narração em PT (outros idiomas à parte)', on: true },
+      { t: 'Color grading e sound design', on: true },
+      { t: '3 rodadas de ajuste inclusas', on: true },
+    ],
+  },
+  {
+    id: 'campanha',
+    kind: 'Campanha · Marca',
+    name: 'Campanha',
+    from: 'a partir de',
+    price: 'Sob consulta',
+    isText: true,
+    meta: 'Animação complexa 2D/3D',
+    fill: 1,
+    featured: false,
+    ctaVariant: 'ghost',
+    quote: 'Oi! Quero um orçamento de uma campanha/motion de marca (plano Campanha).',
+    feats: [
+      { t: 'Direção de arte dedicada', on: true },
+      { t: 'Animação complexa 2D/3D', on: true },
+      { t: 'Múltiplos formatos e cortes', on: true },
+      { t: 'Motion de marca: vinheta + kit', on: true },
+      { t: 'A partir de R$ 8.900, conforme o escopo', on: true },
+    ],
+  },
+]
