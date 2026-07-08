@@ -8,8 +8,12 @@ import { fadeUp, staggerContainer, viewportOnce } from '../lib/motion'
  * Bespoke-service cross-sell, shown inside the customer dashboard.
  * Someone who already bought a pack is a warm lead for a full site or a motion
  * video, so we surface both service tracks here — "as options" — right below
- * their library. Plans and prices are pulled from the SAME source of truth
+ * their library. Plans and prices come from the SAME source of truth
  * (siteTiers / motionTiers) that feeds the landing sections, so nothing drifts.
+ *
+ * Layout: the two service cards stack one below the other (never side by side),
+ * and each card flows top-to-bottom in a single column — header, pitch, the
+ * options as a full-width inset list, then the actions.
  */
 
 const SiteIcon = () => (
@@ -68,9 +72,10 @@ export default function DashboardServices() {
         peça o orçamento e a gente fecha o escopo com você no WhatsApp.
       </p>
 
+      {/* one card below the other — vertical stack, full width */}
       <motion.div
-        className="mt-8 grid grid-cols-1 items-stretch gap-5 md:grid-cols-2"
-        variants={staggerContainer(0.1)}
+        className="mt-8 flex flex-col gap-5"
+        variants={staggerContainer(0.12)}
         initial={reduce ? false : 'hidden'}
         whileInView={reduce ? undefined : 'show'}
         viewport={viewportOnce}
@@ -79,9 +84,9 @@ export default function DashboardServices() {
           <motion.article
             key={s.id}
             variants={fadeUp}
-            whileHover={reduce ? undefined : { y: -4 }}
+            whileHover={reduce ? undefined : { y: -3 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
-            className="group flex h-full flex-col border border-line bg-panel p-7 transition-colors hover:border-blood sm:p-8"
+            className="group flex flex-col border border-line bg-panel p-7 transition-colors hover:border-blood sm:p-8"
           >
             {/* header: icon + label + title */}
             <div className="flex items-center gap-3.5">
@@ -96,37 +101,35 @@ export default function DashboardServices() {
               </div>
             </div>
 
-            <p className="mt-4 text-[14px] text-ash">{s.pitch}</p>
+            <p className="mt-4 max-w-[64ch] text-[14px] text-ash">{s.pitch}</p>
 
-            {/* the options / plans, pulled from the same data as the landing */}
-            <ul className="mt-5 flex flex-col divide-y divide-line border-y border-line">
-              {s.tiers.map((t) => (
-                <li key={t.id} className="flex items-center justify-between gap-3 py-3">
-                  <span className="flex min-w-0 items-center gap-2 text-[14px] text-bone">
-                    <span
-                      aria-hidden="true"
-                      className="h-[6px] w-[6px] flex-none rotate-45 bg-blood"
-                    />
-                    <span className="truncate">{t.name}</span>
-                    {t.featured && (
-                      <span className="font-util flex-none rounded-sm bg-blood/15 px-1.5 py-[3px] text-[9px] font-bold uppercase tracking-[0.12em] text-blood-2">
-                        Popular
-                      </span>
-                    )}
-                  </span>
-                  <span className="font-util whitespace-nowrap text-[12px] uppercase tracking-[0.08em] text-faint">
-                    {t.isText ? 'sob consulta' : `R$ ${t.price}`}
-                  </span>
-                </li>
-              ))}
-            </ul>
+            {/* the options / plans — full-width inset list, name left / price right */}
+            <div className="mt-6 border border-line bg-ink/40 px-5 sm:px-6">
+              <ul className="flex flex-col divide-y divide-line">
+                {s.tiers.map((t) => (
+                  <li key={t.id} className="flex items-center justify-between gap-3 py-[13px]">
+                    <span className="flex min-w-0 items-center gap-2.5 text-[14.5px] text-bone">
+                      <span
+                        aria-hidden="true"
+                        className="h-[6px] w-[6px] flex-none rotate-45 bg-blood"
+                      />
+                      <span className="truncate">{t.name}</span>
+                      {t.featured && (
+                        <span className="font-util flex-none rounded-sm bg-blood/15 px-1.5 py-[3px] text-[9px] font-bold uppercase tracking-[0.12em] text-blood-2">
+                          Popular
+                        </span>
+                      )}
+                    </span>
+                    <span className="font-util whitespace-nowrap text-[12.5px] uppercase tracking-[0.08em] text-faint">
+                      {t.isText ? 'sob consulta' : `a partir de R$ ${t.price}`}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-            <p className="font-util mt-3 text-[10px] uppercase tracking-[0.12em] text-faint">
-              Preços iniciais · orçamento final conforme o escopo
-            </p>
-
-            {/* actions pinned to the bottom so both cards line up */}
-            <div className="mt-auto flex flex-wrap items-center gap-x-5 gap-y-3 pt-6">
+            {/* actions */}
+            <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3">
               <Button href={waLink(s.quote)} target="_blank" rel="noopener noreferrer">
                 Pedir orçamento ↗
               </Button>
@@ -136,6 +139,9 @@ export default function DashboardServices() {
               >
                 Ver todos os planos →
               </a>
+              <span className="font-util ml-auto hidden text-[10px] uppercase tracking-[0.12em] text-faint sm:block">
+                Preços iniciais · orçamento conforme o escopo
+              </span>
             </div>
           </motion.article>
         ))}
