@@ -77,7 +77,7 @@ export default function MotionService() {
         />
 
         <motion.div
-          className="grid grid-cols-1 items-start gap-4 md:grid-cols-3"
+          className="grid grid-cols-1 items-stretch gap-4 md:grid-cols-3"
           variants={staggerContainer(0.1)}
           initial={reduce ? false : 'hidden'}
           whileInView={reduce ? undefined : 'show'}

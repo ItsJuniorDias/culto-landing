@@ -1,6 +1,7 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { Link } from "react-router-dom";
 import DashboardHeader from "../components/DashboardHeader";
+import DashboardServices from "../components/DashboardServices";
 import AssetCard from "../components/AssetCard";
 import Eyebrow from "../components/Eyebrow";
 import Button from "../components/Button";
@@ -189,6 +190,9 @@ export default function Dashboard() {
             ))}
           </motion.div>
         </div>
+
+        {/* bespoke services cross-sell (site + motion) */}
+        <DashboardServices />
 
         {/* persistence note */}
         <p className="mt-12 max-w-[64ch] text-[12px] leading-relaxed text-faint">

@@ -37,7 +37,7 @@ export default function Packs() {
         />
 
         <motion.div
-          className="grid grid-cols-1 items-start gap-4 md:grid-cols-3"
+          className="grid grid-cols-1 items-stretch gap-4 md:grid-cols-3"
           variants={staggerContainer(0.1)}
           initial={reduce ? false : 'hidden'}
           whileInView={reduce ? undefined : 'show'}
@@ -49,7 +49,7 @@ export default function Packs() {
               variants={fadeUp}
               whileHover={reduce ? undefined : { y: -5 }}
               transition={{ duration: 0.2, ease: 'easeOut' }}
-              className={`relative flex flex-col border p-8 ${
+              className={`relative flex h-full flex-col border p-8 ${
                 p.featured
                   ? 'shadow-featured order-first border-blood bg-[linear-gradient(180deg,#181014,#121116)] md:order-none'
                   : 'border-line bg-panel'
