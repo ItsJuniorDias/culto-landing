@@ -213,6 +213,20 @@ export const reel = {
   ],
 };
 
+// ── Preview de motion (card do dashboard) ────────────────────────────────────
+// Vídeo mostrado ao lado do card "Motion pro feed" dentro do dashboard.
+// Mesma lógica do `reel`:
+//   A) YouTube  → preencha `youtubeId` (ex.: youtu.be/AbC123 → 'AbC123')
+//   B) Próprio  → deixe youtubeId: null e aponte `src` p/ um .mp4 em /public/assets
+// `poster` é a capa mostrada antes do play (ideal 16:9, ex.: 1280×720).
+export const motionPreview = {
+  youtubeId: "ScMzIvxBSi4", // ← troque pelo id do seu reel no YouTube
+  src: null, // ← ou "/assets/motion-preview.mp4" p/ vídeo próprio
+  poster: "/assets/kids-space-02.jpg", // ← troque pela sua capa 16:9
+  duration: "0:18",
+  label: "Reel",
+};
+
 // ── Serviços: Criação de sites ───────────────────────────────────────────────
 // Vitrine de projeto real usada como prova social da seção de sites.
 export const sitesShowcase = {
