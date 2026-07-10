@@ -46,22 +46,28 @@ function FaqItem({ q, a, defaultOpen = false }) {
   )
 }
 
-export default function Faq() {
+/*
+ * Acordeão de dúvidas. Reusável entre as telas: cada uma passa seus próprios
+ * `items` e cabeçalho. Sem props, cai no FAQ da loja (retrocompatível).
+ */
+export default function Faq({
+  items = faqs,
+  eyebrow = 'Dúvidas frequentes',
+  title = (
+    <>
+      O que saber antes
+      <br />
+      de comprar.
+    </>
+  ),
+  center = false,
+}) {
   return (
     <section id="faq" className="relative py-[74px] md:py-[104px]">
       <div className="mx-auto max-w-wrap px-6">
-        <SectionHead
-          eyebrow="Dúvidas frequentes"
-          title={
-            <>
-              O que saber antes
-              <br />
-              de comprar.
-            </>
-          }
-        />
-        <div className="max-w-[800px]">
-          {faqs.map((f, i) => (
+        <SectionHead center={center} eyebrow={eyebrow} title={title} />
+        <div className={`max-w-[800px] ${center ? 'mx-auto' : ''}`}>
+          {items.map((f, i) => (
             <FaqItem key={f.q} q={f.q} a={f.a} defaultOpen={i === 0} />
           ))}
         </div>

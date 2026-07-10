@@ -1,62 +1,53 @@
 import { motion, useReducedMotion } from 'framer-motion'
-import SectionHead from './SectionHead'
-import ServiceCard from './ServiceCard'
-import { Halftone } from './Decor'
-import { sitesShowcase, siteTiers } from '../data/content'
+import { sitesShowcase } from '../data/content'
 import { fadeUp, scaleIn, staggerContainer, viewportOnce } from '../lib/motion'
 
-/* Friendly owl mascot — the recognizable face of the Pedagogy product, drawn
-   in its own warm palette so the light preview reads as a real screenshot. */
+/* Coruja mascote — a cara do Pedagogy, no palette quente dele pra o preview
+   claro parecer um screenshot de verdade. */
 function Owl({ className = '' }) {
   return (
     <svg viewBox="0 0 100 100" className={className} aria-hidden="true">
-      {/* ear tufts */}
       <path d="M26 26 L34 14 L40 30 Z" fill="#4B3F72" />
       <path d="M74 26 L66 14 L60 30 Z" fill="#4B3F72" />
-      {/* body */}
       <path
         d="M50 22c-17 0-27 12-27 30 0 16 12 26 27 26s27-10 27-26c0-18-10-30-27-30Z"
         fill="#5A4FCF"
       />
-      {/* belly */}
       <path
         d="M50 46c-9 0-15 7-15 17 0 8 7 13 15 13s15-5 15-13c0-10-6-17-15-17Z"
         fill="#FBF7EC"
         opacity="0.9"
       />
-      {/* eye discs */}
       <circle cx="39" cy="45" r="12" fill="#FBF7EC" />
       <circle cx="61" cy="45" r="12" fill="#FBF7EC" />
       <circle cx="39" cy="45" r="12" fill="none" stroke="#E9A23B" strokeWidth="2.4" />
       <circle cx="61" cy="45" r="12" fill="none" stroke="#E9A23B" strokeWidth="2.4" />
-      {/* pupils */}
       <circle cx="41" cy="46" r="5" fill="#2A2340" />
       <circle cx="59" cy="46" r="5" fill="#2A2340" />
       <circle cx="43" cy="44" r="1.6" fill="#fff" />
       <circle cx="61" cy="44" r="1.6" fill="#fff" />
-      {/* beak */}
       <path d="M50 52 l5 7 -10 0 Z" fill="#E9A23B" />
-      {/* feet */}
       <path d="M43 78v5M47 78v5M53 78v5M57 78v5" stroke="#E9A23B" strokeWidth="2.6" strokeLinecap="round" />
     </svg>
   )
 }
 
-/* Browser-framed preview of a real project. Dark chrome around a warm cream
-   viewport — that contrast is the section's signature moment. */
-function Showcase() {
+/* Prova social da seção de sites: um projeto real no ar (Pedagogy), num mock
+   de navegador. O contraste chrome escuro × viewport creme é o momento de
+   assinatura desta prova. */
+export default function SitesShowcase() {
   const reduce = useReducedMotion()
   const s = sitesShowcase
 
   return (
     <motion.div
-      className="mb-16 grid grid-cols-1 items-center gap-9 md:mb-20 md:grid-cols-[1.15fr_1fr]"
+      className="grid grid-cols-1 items-center gap-9 md:grid-cols-[1.15fr_1fr]"
       variants={staggerContainer(0.12)}
       initial={reduce ? false : 'hidden'}
       whileInView={reduce ? undefined : 'show'}
       viewport={viewportOnce}
     >
-      {/* ── Browser mock ─────────────────────────────────────────────── */}
+      {/* mock de navegador */}
       <motion.div
         variants={reduce ? undefined : scaleIn}
         className="group relative overflow-hidden border border-line bg-panel shadow-[0_40px_90px_-50px_rgba(0,0,0,0.9)]"
@@ -65,7 +56,6 @@ function Showcase() {
           {s.badge}
         </span>
 
-        {/* chrome bar */}
         <div className="flex items-center gap-3 border-b border-line bg-panel-2 px-4 py-3">
           <span aria-hidden="true" className="flex gap-1.5">
             <span className="h-[9px] w-[9px] rounded-full bg-faint/70" />
@@ -81,9 +71,7 @@ function Showcase() {
           </span>
         </div>
 
-        {/* cream viewport = mini hero of the real product */}
         <div className="relative aspect-[16/11] overflow-hidden bg-[radial-gradient(120%_90%_at_50%_0%,#FFFDF6_0%,#FBF7EC_60%,#F3ECDA_100%)]">
-          {/* playful dotted texture */}
           <div
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 opacity-[0.5]"
@@ -92,20 +80,15 @@ function Showcase() {
               backgroundSize: '14px 14px',
             }}
           />
-          {/* soft stars */}
           <span className="absolute left-[12%] top-[16%] text-[#E9A23B]">✦</span>
           <span className="absolute right-[14%] top-[26%] text-[#5A4FCF]/50">✦</span>
           <span className="absolute right-[22%] bottom-[18%] text-[#E9A23B]/70">✦</span>
 
-          {/* wordmark */}
           <div className="absolute left-5 top-4 flex items-center gap-2">
             <Owl className="h-6 w-6" />
-            <span className="text-[15px] font-extrabold tracking-tight text-[#3A3160]">
-              {s.name}
-            </span>
+            <span className="text-[15px] font-extrabold tracking-tight text-[#3A3160]">{s.name}</span>
           </div>
 
-          {/* centered content */}
           <div className="flex h-full flex-col items-center justify-center px-6 pt-6 text-center">
             <motion.div
               animate={reduce ? undefined : { y: [0, -6, 0] }}
@@ -137,7 +120,7 @@ function Showcase() {
         </div>
       </motion.div>
 
-      {/* ── Copy ─────────────────────────────────────────────────────── */}
+      {/* copy */}
       <motion.div variants={reduce ? undefined : fadeUp}>
         <div className="font-util text-xs uppercase tracking-[0.2em] text-blood">{s.kicker}</div>
         <h3 className="font-display mt-2 text-[34px] font-extrabold leading-[0.95]">
@@ -185,52 +168,5 @@ function Showcase() {
         </a>
       </motion.div>
     </motion.div>
-  )
-}
-
-export default function SitesService() {
-  const reduce = useReducedMotion()
-
-  return (
-    <section
-      id="sites"
-      className="relative border-t border-line bg-[radial-gradient(120%_80%_at_50%_-10%,#141118_0%,#08080A_60%)] py-[74px] md:py-[104px]"
-    >
-      <Halftone className="opacity-30" />
-
-      <div className="relative mx-auto max-w-wrap px-6">
-        <SectionHead
-          center
-          solo
-          eyebrow="Sob encomenda"
-          title={
-            <>
-              Sites sob medida.
-              <br />
-              Nada de template.
-            </>
-          }
-          lead="Código do zero, animação de estúdio e performance de verdade. Cada site é desenhado pra sua marca e entregue no ar — não é tema comprado com a sua logo por cima."
-        />
-
-        <Showcase />
-
-        <motion.div
-          className="grid grid-cols-1 items-stretch gap-4 md:grid-cols-3"
-          variants={staggerContainer(0.1)}
-          initial={reduce ? false : 'hidden'}
-          whileInView={reduce ? undefined : 'show'}
-          viewport={viewportOnce}
-        >
-          {siteTiers.map((t) => (
-            <ServiceCard key={t.id} tier={t} />
-          ))}
-        </motion.div>
-
-        <p className="font-util mt-8 text-center text-[11px] uppercase tracking-[0.14em] text-faint">
-          Orçamento em até 24h · 50% pra começar, 50% na entrega · Nota fiscal
-        </p>
-      </div>
-    </section>
   )
 }

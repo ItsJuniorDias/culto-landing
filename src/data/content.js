@@ -135,27 +135,27 @@ export const footerCols = [
   {
     h: "Packs",
     links: [
-      { label: "Design Pack", href: "#packs" },
-      { label: "Motion Pack", href: "#packs" },
-      { label: "Bundle Completo", href: "#packs" },
-      { label: "Catálogo", href: "#inside" },
+      { label: "Design Pack", href: "/#packs" },
+      { label: "Motion Pack", href: "/#packs" },
+      { label: "Bundle Completo", href: "/#packs" },
+      { label: "Catálogo", href: "/#inside" },
     ],
   },
   {
     h: "Serviços",
     links: [
-      { label: "Criação de sites", href: "#sites" },
-      { label: "Vídeo & motion", href: "#motion" },
-      { label: "Pedir orçamento", href: "#sites" },
-      { label: "Projetos no ar", href: "#sites" },
+      { label: "Criação de sites", href: "/sites" },
+      { label: "Vídeo & motion", href: "/motion" },
+      { label: "Planos de site", href: "/sites#planos" },
+      { label: "Projetos no ar", href: "/sites" },
     ],
   },
   {
     h: "Marca",
     links: [
-      { label: "Sobre", href: "#" },
-      { label: "Depoimentos", href: "#voices" },
-      { label: "Dúvidas", href: "#faq" },
+      { label: "Packs", href: "/" },
+      { label: "Depoimentos", href: "/#voices" },
+      { label: "Dúvidas", href: "/#faq" },
       { label: "Afiliados", href: "#" },
     ],
   },

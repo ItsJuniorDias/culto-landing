@@ -1,6 +1,9 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { Grain } from './components/Decor'
+import ScrollManager from './components/ScrollManager'
 import Landing from './pages/Landing'
+import Sites from './pages/Sites'
+import Motion from './pages/Motion'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import PackDetail from './pages/PackDetail'
@@ -13,8 +16,14 @@ export default function App() {
   return (
     <>
       <Grain />
+      <ScrollManager />
       <Routes>
+        {/* Três telas focadas */}
         <Route path="/" element={<Landing />} />
+        <Route path="/sites" element={<Sites />} />
+        <Route path="/motion" element={<Motion />} />
+
+        {/* Loja / conta */}
         <Route path="/login" element={<Login />} />
         <Route path="/pack/:id" element={<PackDetail />} />
         <Route path="/checkout/:id" element={<Checkout />} />

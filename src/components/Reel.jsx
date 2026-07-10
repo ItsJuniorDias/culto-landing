@@ -36,7 +36,7 @@ function PlayButton({ reduce }) {
   );
 }
 
-export default function Reel() {
+export default function Reel({ id = "reel", showCta = true }) {
   const reduce = useReducedMotion();
   const [playing, setPlaying] = useState(false);
 
@@ -46,7 +46,7 @@ export default function Reel() {
 
   return (
     <section
-      id="reel"
+      id={id}
       className="relative overflow-hidden py-[74px] md:py-[104px]"
     >
       <Halftone className="opacity-30" />
@@ -159,11 +159,12 @@ export default function Reel() {
 
         {/* CTA de conversão — captura o interesse no pico, logo após o vídeo.
            Leva à página do Bundle (entrada do checkout), pública e sem
-           barreira de login. */}
-        <Reveal
-          delay={0.1}
-          className="mx-auto mt-[52px] max-w-[680px] text-center md:mt-16"
-        >
+           barreira de login. Escondido quando a tela traz o próprio CTA. */}
+        {showCta && (
+          <Reveal
+            delay={0.1}
+            className="mx-auto mt-[52px] max-w-[680px] text-center md:mt-16"
+          >
           <p className="font-util text-[11px] uppercase tracking-[0.2em] text-blood">
             Gostou do que viu?
           </p>
@@ -191,6 +192,7 @@ export default function Reel() {
             <span>7 dias de garantia</span>
           </p>
         </Reveal>
+        )}
       </div>
     </section>
   );
