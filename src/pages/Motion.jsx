@@ -11,7 +11,7 @@ import ServiceCta from '../components/ServiceCta'
 import ServicesCrossLink from '../components/ServicesCrossLink'
 import Footer from '../components/Footer'
 import { motionTiers, waLink } from '../data/content'
-import { motionProcess, motionDeliverables, motionFaqs, serviceCta } from '../data/screens'
+import { motionProcess, motionDeliverables, motionFaqs, serviceCta, MOTION_WHATSAPP } from '../data/screens'
 import { fadeUp, staggerContainer, viewportOnce } from '../lib/motion'
 
 /* Faixa de formatos de entrega — chips numa moldura escura. */
@@ -67,7 +67,7 @@ export default function Motion() {
     <>
       <SiteHeader
         active="motion"
-        cta={{ label: 'Pedir orçamento', href: waLink('Oi! Quero um orçamento de vídeo/motion.'), external: true }}
+        cta={{ label: 'Pedir orçamento', href: waLink('Oi! Quero um orçamento de vídeo/motion.', MOTION_WHATSAPP), external: true }}
       />
       <main>
         <MotionHero />

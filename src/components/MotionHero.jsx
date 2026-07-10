@@ -172,7 +172,7 @@ export default function MotionHero() {
         </motion.p>
 
         <motion.div {...rise(0.54)} className="mt-8 flex flex-wrap justify-center gap-3.5">
-          <Button href={waLink(s.primary.quote)} target="_blank" rel="noopener noreferrer">
+          <Button href={waLink(s.primary.quote, s.whatsapp)} target="_blank" rel="noopener noreferrer">
             {s.primary.label} ↗
           </Button>
           <Button href={s.secondary.href} variant="ghost">

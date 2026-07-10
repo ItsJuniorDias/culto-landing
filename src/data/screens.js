@@ -11,6 +11,11 @@ export const screens = [
   { key: 'motion', label: 'Motion', to: '/motion', blurb: 'Vídeo & motion sob encomenda' },
 ]
 
+// ── Contato por seção de serviço ────────────────────────────────────────────
+// Cada serviço fala num WhatsApp/telefone próprio.
+export const SITES_WHATSAPP = '5517991115745'
+export const MOTION_WHATSAPP = '5521986667966'
+
 // ── Tela: Sites ─────────────────────────────────────────────────────────────
 export const sitesHero = {
   eyebrow: 'Criação de sites',
@@ -96,6 +101,7 @@ export const motionHero = {
   lead: 'Do reels vertical ao explainer de produto: animação feita à mão em After Effects, com trilha, som e color no capricho. A partir de R$ 60 por segundo.',
   primary: { label: 'Pedir orçamento', quote: 'Oi! Quero um orçamento de vídeo/motion.' },
   secondary: { label: 'Ver o showreel', href: '#showreel' },
+  whatsapp: MOTION_WHATSAPP,
   trust: ['4K ProRes & H.264', 'Trilha licenciada', 'Legendas inclusas'],
   // trilhas do editor mostradas no hero (a assinatura da tela)
   tracks: [
@@ -180,8 +186,8 @@ export const serviceCta = {
     lead: 'Manda a ideia no WhatsApp e você recebe um orçamento com escopo e prazo em até 24h. Sem compromisso, sem enrolação.',
     quote: 'Oi! Quero um orçamento de site. Minha ideia é:',
     foot: 'Orçamento em 24h · 50% pra começar, 50% na entrega · Nota fiscal',
-    // Telefone de contato exibido só na tela de Sites (tocável no celular).
-    phone: { display: '(17) 99111-5745', tel: '+5517991115745' },
+    // Contato exibido só na tela de Sites (tocável no celular).
+    phone: { display: '(17) 99111-5745', tel: '+5517991115745', whatsapp: SITES_WHATSAPP },
   },
   motion: {
     kicker: 'Tem um vídeo em mente?',
@@ -189,5 +195,7 @@ export const serviceCta = {
     lead: 'Conta o que você precisa animar e você recebe um orçamento com prazo e formato em até 24h. Do reels ao filme de campanha.',
     quote: 'Oi! Quero um orçamento de vídeo/motion. Preciso de:',
     foot: 'Entrega em ProRes & H.264 · trilha licenciada · legendas inclusas',
+    // Contato exibido só na tela de Motion (tocável no celular).
+    phone: { display: '(21) 98666-7966', tel: '+5521986667966', whatsapp: MOTION_WHATSAPP },
   },
 }

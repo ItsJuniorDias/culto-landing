@@ -37,7 +37,7 @@ export default function ServiceCta({ config, id = 'orcamento' }) {
           </p>
 
           <div className="relative z-[2] flex flex-wrap justify-center gap-3.5">
-            <Button href={waLink(config.quote)} target="_blank" rel="noopener noreferrer">
+            <Button href={waLink(config.quote, config.phone?.whatsapp)} target="_blank" rel="noopener noreferrer">
               Chamar no WhatsApp ↗
             </Button>
             <Button to="/" variant="ghost">

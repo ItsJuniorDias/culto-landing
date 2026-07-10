@@ -192,9 +192,11 @@ export const contact = {
 };
 
 // Monta um link wa.me já com a mensagem preenchida.
+// `number` permite usar um WhatsApp diferente por seção (Sites x Motion).
 export const waLink = (
   msg = "Oi! Vim pelo site do Culto e quero um orçamento.",
-) => `https://wa.me/${contact.whatsapp}?text=${encodeURIComponent(msg)}`;
+  number = contact.whatsapp,
+) => `https://wa.me/${number}?text=${encodeURIComponent(msg)}`;
 
 // ── Showreel ────────────────────────────────────────────────────────────────
 // Troque pelos dados do seu vídeo. Duas formas de usar:
