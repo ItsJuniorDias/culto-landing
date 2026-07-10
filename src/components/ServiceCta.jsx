@@ -45,6 +45,18 @@ export default function ServiceCta({ config, id = 'orcamento' }) {
             </Button>
           </div>
 
+          {config.phone && (
+            <p className="font-util relative z-[2] mt-6 text-[12px] uppercase tracking-[0.16em] text-ash">
+              Prefere ligar?{' '}
+              <a
+                href={`tel:${config.phone.tel}`}
+                className="text-bone underline-offset-4 transition-colors hover:text-blood hover:underline"
+              >
+                {config.phone.display}
+              </a>
+            </p>
+          )}
+
           <div className="font-util relative z-[2] mt-[26px] text-xs uppercase tracking-[0.14em] text-faint">
             {config.foot}
           </div>

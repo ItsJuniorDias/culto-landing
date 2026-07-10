@@ -11,6 +11,7 @@ import { useAuth } from '../context/AuthContext'
 import { useDevMode } from '../context/DevModeContext'
 import { byId } from '../data/catalog'
 import { downloadFile } from '../lib/download'
+import { viewContent, addToCart, packParams } from '../lib/pixel'
 import { EASE } from '../lib/motion'
 
 const Check = () => (
@@ -84,6 +85,8 @@ export default function PackDetail() {
 
   useEffect(() => {
     window.scrollTo(0, 0)
+    const p = byId(id)
+    if (p) viewContent(packParams(p))
   }, [id])
 
   if (!pack) return <Navigate to="/" replace />
@@ -98,6 +101,7 @@ export default function PackDetail() {
   }
 
   const handleBuy = () => {
+    addToCart(packParams(pack))
     if (!user) {
       // Precisa estar logado para a compra ficar atrelada à conta.
       navigate('/login', { state: { from: `/checkout/${pack.id}` } })

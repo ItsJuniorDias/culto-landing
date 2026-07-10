@@ -180,6 +180,8 @@ export const serviceCta = {
     lead: 'Manda a ideia no WhatsApp e você recebe um orçamento com escopo e prazo em até 24h. Sem compromisso, sem enrolação.',
     quote: 'Oi! Quero um orçamento de site. Minha ideia é:',
     foot: 'Orçamento em 24h · 50% pra começar, 50% na entrega · Nota fiscal',
+    // Telefone de contato exibido só na tela de Sites (tocável no celular).
+    phone: { display: '(17) 99111-5745', tel: '+5517991115745' },
   },
   motion: {
     kicker: 'Tem um vídeo em mente?',

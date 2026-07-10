@@ -11,6 +11,7 @@ import { byId } from '../data/catalog'
 import { downloadFile } from '../lib/download'
 import { parseReturn, readPending, clearPending, readPendingPayment, clearPendingPayment, isApproved, isPending } from '../lib/checkout'
 import { api } from '../lib/api'
+import { purchase, packParams } from '../lib/pixel'
 import { EASE } from '../lib/motion'
 import QRCode from 'react-qr-code'
 
@@ -24,6 +25,27 @@ export default function CheckoutReturn() {
   const [payment, setPayment] = useState(null) // Pix/boleto guardado no checkout
   const [copied, setCopied] = useState(false)
 
+  // Dispara o Purchase no máximo uma vez por pedido. Guarda uma marca no
+  // localStorage (sobrevive a refresh/re-resolve depois do login) e manda o
+  // eventID = order.<id> pra deduplicar caso você ligue a Conversions API.
+  const firePurchase = (pack, orderId, order, paymentId) => {
+    const dedupKey = orderId || paymentId || `pack-${pack?.id || 'unknown'}`
+    try {
+      const storeKey = `culto:pxPurchase:${dedupKey}`
+      if (localStorage.getItem(storeKey)) return // já contamos essa compra
+      localStorage.setItem(storeKey, '1')
+    } catch {
+      /* storage indisponível — segue e conta mesmo assim */
+    }
+    const cents = order?.totalCents ?? order?.amountCents ?? order?.total ?? null
+    const value =
+      cents != null ? Number(cents) / 100 : Number(pack?.priceValue) || 0
+    purchase(
+      packParams(pack, { value, num_items: 1 }),
+      orderId ? { eventID: `order.${orderId}` } : undefined,
+    )
+  }
+
   // Resolve o estado da compra.
   //  Fluxo novo  (nossa API): ?order=<id> → consulta o status REAL no servidor.
   //  Fluxo legado (Mercado Pago): status anexado na URL.
@@ -36,6 +58,7 @@ export default function CheckoutReturn() {
         const { order } = await api.getCheckoutSession(orderId)
         const pack = byId(order.packId) || byId(pending?.id) || null
         if (order.status === 'paid') {
+          firePurchase(pack, orderId, order)
           clearPendingPayment(orderId)
           if (user && pack) {
             purchase(pack.id) // libera o pack na conta logada
@@ -62,6 +85,7 @@ export default function CheckoutReturn() {
     const pid = parseReturn().packFromUrl || pending?.id || ''
     const pack = byId(pid) || null
     if (isApproved(status)) {
+      firePurchase(pack, '', null, parseReturn().paymentId)
       if (user && pack) {
         purchase(pack.id)
         clearPending()

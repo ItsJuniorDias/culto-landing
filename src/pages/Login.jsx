@@ -7,6 +7,7 @@ import Button from "../components/Button";
 import Field from "../components/Field";
 import { Halftone, Rays, Burst } from "../components/Decor";
 import { useAuth, DEMO_HINT } from "../context/AuthContext";
+import { completeRegistration, identify } from "../lib/pixel";
 import { EASE } from "../lib/motion";
 
 export default function Login() {
@@ -30,6 +31,10 @@ export default function Login() {
     try {
       if (isSignup) signUp({ name, email, password });
       else login({ email, password });
+      // Advanced Matching + CompleteRegistration (só no cadastro).
+      const [firstName, ...restName] = name.trim().split(/\s+/);
+      identify({ email, firstName, lastName: restName.join(" ") });
+      if (isSignup) completeRegistration({ status: true });
       navigate(dest, { replace: true });
     } catch (err) {
       setError(err.message);

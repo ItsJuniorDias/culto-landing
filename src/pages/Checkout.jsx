@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import StoreNav from "../components/StoreNav";
@@ -24,6 +24,7 @@ import { useAuth } from "../context/AuthContext";
 import { byId } from "../data/catalog";
 import { writePending, writePendingPayment } from "../lib/checkout";
 import { api, ApiError, centsToReais } from "../lib/api";
+import { initiateCheckout, addPaymentInfo, identify, packParams } from "../lib/pixel";
 import { formatBRL, installmentOptions } from "../lib/money";
 import { EASE } from "../lib/motion";
 import {
@@ -208,6 +209,19 @@ export default function Checkout() {
     ? centsToReais(serverPricing.totalCents)
     : subtotal;
 
+  // InitiateCheckout — dispara uma vez quando o checkout de fato aparece
+  // (pack pago, usuário logado e ainda não comprado). Os returns de Navigate
+  // abaixo evitam telas inválidas, então checamos as mesmas condições aqui.
+  const initiated = useRef(false);
+  const canCheckout = !!pack && !pack.free && !!user && !ownsPack(pack.id);
+  useEffect(() => {
+    if (canCheckout && !initiated.current) {
+      initiated.current = true;
+      initiateCheckout(packParams(pack, { value: total, num_items: 1 }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canCheckout]);
+
   const brand = detectBrand(card.number);
   const installmentList = useMemo(() => installmentOptions(total), [total]);
   const selN = Math.min(installments, installmentList.length);
@@ -298,6 +312,13 @@ export default function Checkout() {
 
     setStatus("processing");
     setSubmitError("");
+
+    // Advanced Matching + AddPaymentInfo: o usuário preencheu dados válidos e
+    // mandou pagar. Mandamos e-mail/telefone pro Pixel ANTES do redirect do
+    // Mercado Pago (melhora o Event Match Quality) e marcamos AddPaymentInfo.
+    const [firstName, ...restName] = name.trim().split(/\s+/);
+    identify({ email, phone, firstName, lastName: restName.join(" ") });
+    addPaymentInfo(packParams(pack, { value: total, num_items: 1 }));
 
     // Monta o payload pra API. O CPF vai só com dígitos; o preço NÃO é enviado
     // — o servidor recalcula a partir do pack + cupom (cliente não dita valor).

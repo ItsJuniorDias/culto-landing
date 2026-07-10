@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { Grain } from './components/Decor'
 import ScrollManager from './components/ScrollManager'
+import PixelTracker from './components/PixelTracker'
 import Landing from './pages/Landing'
 import Sites from './pages/Sites'
 import Motion from './pages/Motion'
@@ -17,6 +18,7 @@ export default function App() {
     <>
       <Grain />
       <ScrollManager />
+      <PixelTracker />
       <Routes>
         {/* Três telas focadas */}
         <Route path="/" element={<Landing />} />
