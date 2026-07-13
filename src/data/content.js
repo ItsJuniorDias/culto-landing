@@ -206,10 +206,11 @@ export const waLink = (
 //                       em /public/assets (ex.: '/assets/reel.mp4')
 // `poster` é a thumb mostrada antes do play (ideal 1280×720).
 export const reel = {
-  youtubeId: "ScMzIvxBSi4", // ← id do seu showreel no YouTube
-  src: null, // ← ou '/assets/reel.mp4' para vídeo hospedado
-  poster: "/assets/kids-space-01.jpg", // ← troque pela sua capa
-  duration: "1:48",
+  youtubeId: null, // ← vídeo próprio (deixe null para usar o `src`)
+  src: "/assets/promo-motion.mp4", // ← vídeo de divulgação hospedado
+  poster: "/assets/promo-motion-poster.jpg", // ← capa (1º frame do vídeo)
+  vertical: true, // ← peça em formato retrato (9:16) → moldura vertical
+  duration: "0:28",
   stats: [
     { k: "4K", v: "ProRes & H.264" },
     { k: "60", v: "fps no render" },

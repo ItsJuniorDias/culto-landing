@@ -24,7 +24,12 @@ import { useAuth } from "../context/AuthContext";
 import { byId } from "../data/catalog";
 import { writePending, writePendingPayment } from "../lib/checkout";
 import { api, ApiError, centsToReais } from "../lib/api";
-import { initiateCheckout, addPaymentInfo, identify, packParams } from "../lib/pixel";
+import {
+  initiateCheckout,
+  addPaymentInfo,
+  identify,
+  packParams,
+} from "../lib/pixel";
 import { formatBRL, installmentOptions } from "../lib/money";
 import { EASE } from "../lib/motion";
 import {
@@ -239,7 +244,8 @@ export default function Checkout() {
     exp: expiryValid(card.exp) ? "" : "Validade inválida",
     cvc: cvcValid(card.cvc, brand) ? "" : "CVV inválido",
   };
-  const baseValid = !errors.email && !errors.fullName && !errors.phone && !errors.cpf;
+  const baseValid =
+    !errors.email && !errors.fullName && !errors.phone && !errors.cpf;
   const isValid =
     method === "card"
       ? baseValid &&
@@ -325,7 +331,12 @@ export default function Checkout() {
     const payload = {
       packId: pack.id,
       paymentMethod: method,
-      customer: { email: email.trim(), cpf: onlyDigits(cpf), name: name.trim(), phone: onlyDigits(phone) },
+      customer: {
+        email: email.trim(),
+        cpf: onlyDigits(cpf),
+        name: name.trim(),
+        phone: onlyDigits(phone),
+      },
       ...(appliedCoupon ? { couponCode: appliedCoupon.code } : {}),
     };
 
@@ -642,9 +653,9 @@ export default function Checkout() {
                         Pague com Pix em segundos
                       </h3>
                       <p className="mt-1.5 text-[13px] text-ash">
-                        Ao confirmar, geramos o seu Pix na hora — QR Code e código
-                        copia e cola — na próxima tela. Escaneie ou cole no app do
-                        seu banco e a liberação é imediata.
+                        Ao confirmar, geramos o seu Pix na hora — QR Code e
+                        código copia e cola — na próxima tela. Escaneie ou cole
+                        no app do seu banco e a liberação é imediata.
                       </p>
                       <span className="font-util mt-3 inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.14em] text-faint">
                         <Lock className="h-3.5 w-3.5" /> Expira em 30 min
@@ -661,10 +672,10 @@ export default function Checkout() {
                         Pague com boleto
                       </h3>
                       <p className="mt-3 text-[13px] text-ash">
-                        Ao confirmar, geramos o boleto na próxima tela — com a linha
-                        digitável e o PDF pra baixar. O vencimento é em 3 dias úteis;
-                        a compensação leva até 2 dias e o pack libera automaticamente
-                        assim que o pagamento cair.
+                        Ao confirmar, geramos o boleto na próxima tela — com a
+                        linha digitável e o PDF pra baixar. O vencimento é em 3
+                        dias úteis; a compensação leva até 2 dias e o pack
+                        libera automaticamente assim que o pagamento cair.
                       </p>
                     </div>
                   </motion.div>

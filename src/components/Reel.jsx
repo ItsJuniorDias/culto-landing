@@ -39,6 +39,7 @@ function PlayButton({ reduce }) {
 export default function Reel({ id = "reel", showCta = true }) {
   const reduce = useReducedMotion();
   const [playing, setPlaying] = useState(false);
+  const isVertical = !!reel.vertical;
 
   const embedSrc = reel.youtubeId
     ? `https://www.youtube-nocookie.com/embed/${reel.youtubeId}?autoplay=1&rel=0&modestbranding=1&playsinline=1`
@@ -61,14 +62,18 @@ export default function Reel({ id = "reel", showCta = true }) {
               <br />É a peça rodando.
             </>
           }
-          lead="Um corte de um minuto com LUTs, transições e motion do pacote aplicados de verdade. O que você vê no vídeo é o que entra na sua timeline."
+          lead="Um corte com LUTs, transições e motion do pacote aplicados de verdade. O que você vê no vídeo é o que entra na sua timeline."
         />
 
         <Reveal
           variants={scaleIn}
-          className="group relative mx-auto max-w-[960px]"
+          className={`group relative mx-auto ${isVertical ? "max-w-[380px]" : "max-w-[960px]"}`}
         >
-          <div className="relative aspect-video overflow-hidden border border-line bg-panel shadow-featured">
+          <div
+            className={`relative overflow-hidden border border-line bg-panel shadow-featured ${
+              isVertical ? "aspect-[9/16]" : "aspect-video"
+            }`}
+          >
             {/* Signature accent bar that wipes across the top on hover */}
             {!playing && (
               <span className="absolute left-0 top-0 z-20 h-[3px] w-0 bg-blood transition-[width] duration-500 group-hover:w-full" />
