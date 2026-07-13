@@ -1,22 +1,22 @@
-import { useNavigate } from 'react-router-dom'
-import Logo from './Logo'
-import { useAuth } from '../context/AuthContext'
+import { useNavigate } from "react-router-dom";
+import Logo from "./Logo";
+import { useAuth } from "../context/AuthContext";
 
 export default function DashboardHeader() {
-  const { user, logout } = useAuth()
-  const navigate = useNavigate()
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   const handleLogout = () => {
-    logout()
-    navigate('/')
-  }
+    logout();
+    navigate("/");
+  };
 
-  const initial = (user?.name || '?').trim().charAt(0).toUpperCase()
+  const initial = (user?.name || "?").trim().charAt(0).toUpperCase();
 
   return (
     <header className="sticky top-0 z-[60] border-b border-line bg-ink/90 backdrop-blur-md">
       <div className="mx-auto flex h-[70px] max-w-wrap items-center justify-between px-6">
-        <Logo to="/dashboard" />
+        <Logo to="/" />
 
         <div className="flex items-center gap-3 sm:gap-5">
           <a
@@ -33,7 +33,9 @@ export default function DashboardHeader() {
             >
               {initial}
             </span>
-            <span className="hidden text-sm text-ash sm:inline">{user?.name}</span>
+            <span className="hidden text-sm text-ash sm:inline">
+              {user?.name}
+            </span>
           </div>
 
           <button
@@ -46,5 +48,5 @@ export default function DashboardHeader() {
         </div>
       </div>
     </header>
-  )
+  );
 }
