@@ -1,19 +1,27 @@
 import Reveal from './Reveal'
-import QuoteForm from './QuoteForm'
+import Button from './Button'
+import { waUrl, buildQuoteMessage } from '../lib/leads'
 import { Halftone, Rays, Burst } from './Decor'
 
 /*
  * Bloco de conversão das telas de serviço (Sites e Motion). Mantém a energia de
- * pôster do FinalCta da loja, mas o miolo agora é o FORMULÁRIO de orçamento
- * (QuoteForm): o visitante monta um briefing curto e o submit abre o WhatsApp
- * com a mensagem pronta, disparando o evento Lead. Antes era um botão decorativo
- * só — agora é uma unidade de captação de verdade.
+ * pôster do FinalCta da loja, mas o miolo agora é um ÚNICO botão de WhatsApp: o
+ * visitante clica e cai direto na conversa com a mensagem de orçamento já pronta
+ * (buildQuoteMessage). Antes tinha um formulário de briefing aqui — trocado por
+ * um CTA seco e direto.
+ *
+ * TRACKING (intacto): o botão é um <a> pra wa.me, então o listener global
+ * (PixelTracker) pega o clique e dispara `Lead` (com valor) + `Contact`, com o
+ * serviço e o valor resolvidos pelo pathname (/sites → sites, /motion → motion).
+ * Nada de instrumentar na mão — é o mesmo caminho de conversão de todo CTA de
+ * WhatsApp do site (cabeçalho, herói, cards de plano, barra mobile).
  *
  * `config` vem de screens.js (serviceCta.sites / serviceCta.motion).
- * `service` decide número de WhatsApp, faixas de orçamento e cópia ('sites'|'motion').
+ * `service` decide o número do WhatsApp e a cópia da mensagem ('sites'|'motion').
  */
 export default function ServiceCta({ config, service = 'sites', id = 'orcamento' }) {
   const [line1, line2] = config.title.split('\n')
+  const href = waUrl(buildQuoteMessage({ service }), service)
 
   return (
     <section id={id} className="relative py-[74px] md:py-[104px]">
@@ -40,9 +48,11 @@ export default function ServiceCta({ config, service = 'sites', id = 'orcamento'
             {config.lead}
           </p>
 
-          {/* formulário de orçamento — o coração da conversão */}
-          <div className="relative z-[2]">
-            <QuoteForm service={service} phone={config.phone} />
+          {/* CTA único → WhatsApp direto (o listener global registra Lead + Contact) */}
+          <div className="relative z-[2] mt-9 flex flex-wrap justify-center gap-3.5">
+            <Button href={href} target="_blank" rel="noopener noreferrer">
+              Chamar no WhatsApp ↗
+            </Button>
           </div>
 
           <div className="font-util relative z-[2] mt-8 text-xs uppercase tracking-[0.14em] text-faint">
