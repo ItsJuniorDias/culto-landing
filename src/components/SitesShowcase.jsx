@@ -122,10 +122,11 @@ function IllustratedPreview({ s, reduce }) {
  * X-Frame-Options e não rouba o scroll da página.
  *
  * Carregamento em cascata (a 1ª fonte que devolver um print válido vence):
- *   1. /assets/pedagogy-preview.jpg  → print local OPCIONAL. Se você colocar esse
- *      arquivo em public/assets/, ele vira a fonte definitiva: instantâneo, sem
- *      depender de terceiro, qualidade que você escolhe. Se não existir (404), cai
- *      automaticamente pros geradores abaixo.
+ *   1. /assets/preview.webp  → print local, a FONTE DEFINITIVA. O arquivo mora em
+ *      public/assets/preview.webp e o Vite serve /public a partir da raiz, então o
+ *      endereço correto é /assets/preview.webp. Instantâneo, sem depender de
+ *      terceiro, qualidade que você escolhe. Pra trocar o print é só substituir esse
+ *      arquivo. Se ele sumir (404), cai automaticamente pros geradores abaixo.
  *   2. thum.io   → gera o print sob demanda e devolve a imagem final (sem tela de
  *      "generating…" como o mShots, que era o bug anterior).
  *   3. microlink → segundo gerador, backup.
@@ -143,7 +144,11 @@ export default function SitesShowcase() {
     const target = s.live.replace(/\/+$/, ""); // https://pedagogy.com.br
 
     const sources = [
-      { url: "/public/assets/preview.webp", timeout: 3500 },
+      // Print local — fonte definitiva. No Vite, tudo em /public é servido a partir
+      // da RAIZ, então o arquivo public/assets/preview.webp responde em /assets/…
+      // (o prefixo /public/ caía no fallback do SPA e devolvia o index.html, por isso
+      // a imagem "carregava" mas nunca virava screenshot). Instantâneo e sem terceiros.
+      { url: "/assets/preview.webp", timeout: 2500 },
       {
         url: `https://image.thum.io/get/width/1280/crop/880/wait/4/noanimate/${target}`,
         timeout: 15000,
@@ -215,10 +220,6 @@ export default function SitesShowcase() {
         variants={reduce ? undefined : scaleIn}
         className="group relative overflow-hidden border border-line bg-panel shadow-[0_40px_90px_-50px_rgba(0,0,0,0.9)]"
       >
-        <span className="font-util absolute -left-px -top-px z-30 bg-blood px-3.5 py-[7px] text-[11px] font-bold uppercase tracking-[0.16em] text-bone">
-          {s.badge}
-        </span>
-
         <div className="flex items-center gap-3 border-b border-line bg-panel-2 px-4 py-3">
           <span aria-hidden="true" className="flex gap-1.5">
             <span className="h-[9px] w-[9px] rounded-full bg-faint/70" />
@@ -244,7 +245,7 @@ export default function SitesShowcase() {
           target="_blank"
           rel="noopener noreferrer"
           aria-label={`Abrir ${s.url} em nova aba`}
-          className="relative block aspect-[16/11] overflow-hidden bg-panel-2"
+          className="relative block aspect-[16/9] overflow-hidden bg-panel-2"
         >
           {status === "ready" ? (
             <motion.img
