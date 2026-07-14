@@ -87,24 +87,27 @@ export const steps = [
   },
 ];
 
-export const voices = [
+// Seção de confiança da home (id="voices").
+// Antes eram depoimentos nominais — removidos porque não dá pra comprovar num
+// estúdio solo pré-lançamento (mesmo motivo pelo qual o ProofStrip dos serviços
+// não inventa review). No lugar entram garantias REAIS, todas espelhando o FAQ.
+// Quando tiver reviews de verdade, é só recriar um array `voices` e trocar a
+// seção — a copy honesta aqui continua valendo como reforço.
+export const guarantees = [
   {
-    text: "As LUTs salvaram minha vida no color. Apliquei, ajustei um pouco e o look ficou pronto. Entreguei um clipe inteiro na metade do tempo.",
-    name: "Rafael Mendes",
-    role: "Editor de vídeo · SP",
-    av: "linear-gradient(135deg,#E10600,#2a0200)",
+    title: "Pagamento único",
+    tag: "Sem assinatura",
+    text: "Você compra uma vez e os arquivos são seus pra sempre — sem mensalidade nem cobrança recorrente escondida. No Bundle Completo, as atualizações futuras entram sem custo extra.",
   },
   {
-    text: "Os mockups são absurdos de bons. Objeto inteligente certinho, sombra realista. Uso em quase toda proposta que mando pra cliente.",
-    name: "Camila Duarte",
-    role: "Designer gráfica · RJ",
-    av: "linear-gradient(135deg,#2a0200,#E10600)",
+    title: "Licença comercial em tudo",
+    tag: "Uso liberado",
+    text: "Pode usar em job de cliente, peça paga e projeto comercial, sem precisar dar créditos. A única regra é não revender os arquivos soltos como se fossem seus.",
   },
   {
-    text: "O Bundle paga o investimento no primeiro freela. As transições e os lower thirds deixam tudo com cara de estúdio grande.",
-    name: "Lucas Ferreira",
-    role: "Motion designer · BH",
-    av: "linear-gradient(135deg,#FF1A0E,#1a0100)",
+    title: "7 dias de garantia",
+    tag: "Risco zero",
+    text: "Se os packs não fizerem sentido pro seu trabalho, é só pedir o reembolso por e-mail dentro de 7 dias. Devolvo o valor integral, sem interrogatório.",
   },
 ];
 
@@ -154,7 +157,7 @@ export const footerCols = [
     h: "Marca",
     links: [
       { label: "Packs", href: "/" },
-      { label: "Depoimentos", href: "/#voices" },
+      { label: "Garantias", href: "/#voices" },
       { label: "Dúvidas", href: "/#faq" },
       { label: "Afiliados", href: "#" },
     ],

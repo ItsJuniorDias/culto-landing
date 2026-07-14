@@ -14,8 +14,9 @@ import Footer from "../components/Footer";
 
 /*
  * Tela HOME — focada nos assets (a loja de packs).
- * Só o funil da loja: herói dos assets → categorias → planos → como funciona →
- * showreel → prova social → dúvidas → ponte pros serviços → CTA do Bundle.
+ * Só o funil da loja: herói dos assets → categorias (constrói valor) →
+ * showreel (prova que é real) → planos → como funciona → prova social/garantias
+ * → dúvidas → ponte pros serviços → CTA do Bundle.
  * Sites e Motion agora têm telas próprias (/sites e /motion).
  */
 export default function Landing() {

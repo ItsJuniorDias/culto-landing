@@ -7,11 +7,14 @@ import { EASE, fadeUp } from "../lib/motion";
 import { useHeroParallax } from "../lib/useHeroParallax";
 
 // Each stat carries everything CountUp needs to render its final string,
-// so "2.300+", "18 mil" and "4,9★" animate while keeping their formatting.
+// so "2.300+", "8" and "100%" animate while keeping their formatting.
+// Só métricas verificáveis: volume do catálogo, softwares suportados e a
+// licença. Nada de "usuários"/"nota média" que não dá pra comprovar num
+// estúdio solo — isso quebra confiança e é publicidade enganosa (CDC).
 const stats = [
   { to: 2300, separator: ".", suffix: "+", lbl: "Assets prontos" },
-  { to: 18, suffix: " mil", lbl: "Criadores" },
-  { to: 4.9, decimals: 1, suffix: "★", lbl: "Nota média" },
+  { to: 8, suffix: "", lbl: "Softwares suportados" },
+  { to: 100, suffix: "%", lbl: "Licença comercial" },
 ];
 
 // Orchestrates the stats row: the block rises in, then each figure reveals
@@ -132,7 +135,7 @@ export default function Hero() {
         {/* Plane 5 — eyebrow */}
         <motion.div style={copyPlane} className="relative z-[2] mb-[26px]">
           <motion.div {...rise(0.1)}>
-            <Eyebrow solo>2.300+ assets · licença comercial</Eyebrow>
+            <Eyebrow solo>Pra designers, editores &amp; motion designers</Eyebrow>
           </motion.div>
         </motion.div>
 
