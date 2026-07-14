@@ -137,9 +137,9 @@ export function submitQuote({ service = 'sites', name, budget, brief } = {}) {
 // Refletem os planos de content.js — mantém o lead ancorado numa faixa de preço.
 export const BUDGET_OPTIONS = {
   sites: [
-    'Landing (a partir de R$ 2.900)',
-    'Institucional (a partir de R$ 6.900)',
-    'Sistema / web app (a partir de R$ 14.900)',
+    'Landing (a partir de R$ 1.497)',
+    'Institucional (a partir de R$ 2.997)',
+    'Sistema / web app (a partir de R$ 6.900)',
     'Ainda não sei',
   ],
   motion: [
