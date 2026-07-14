@@ -65,7 +65,32 @@
         s = b.getElementsByTagName(e)[0]
         s.parentNode.insertBefore(t, s)
       })(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js')
-      fbq('init', '4131814847110778')
+
+      // Identidade/atribuição ANTES do 1º PageView, pra ele já sair com
+      // external_id (sobe o Event Match Quality) e com o _fbc do anúncio
+      // capturado. A app (src/lib/metaIdentity.js) lê estas MESMAS chaves.
+      ;(function () {
+        try {
+          var LS = window.localStorage
+          var xid = LS.getItem('culto:xid')
+          if (!xid) {
+            xid =
+              window.crypto && crypto.randomUUID
+                ? crypto.randomUUID()
+                : 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10)
+            LS.setItem('culto:xid', xid)
+          }
+          window.__CULTO_XID__ = xid
+          var fbclid = new URLSearchParams(location.search).get('fbclid')
+          if (fbclid) {
+            var fbc = 'fb.1.' + Date.now() + '.' + fbclid
+            LS.setItem('culto:_fbc', fbc)
+            document.cookie = '_fbc=' + fbc + ';path=/;max-age=' + 90 * 24 * 60 * 60 + ';SameSite=Lax'
+          }
+        } catch (e) {}
+      })()
+
+      fbq('init', '4131814847110778', window.__CULTO_XID__ ? { external_id: window.__CULTO_XID__ } : {})
       fbq('track', 'PageView')
     </script>
     <!-- End Meta Pixel Code -->

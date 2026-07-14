@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import Button from './Button'
-import { BUDGET_OPTIONS, submitQuote, fireLead, waUrl, buildQuoteMessage } from '../lib/leads'
+import { BUDGET_OPTIONS, submitQuote, waUrl, buildQuoteMessage } from '../lib/leads'
 
 /*
  * Formulário de orçamento dos serviços (Sites e Motion).
@@ -41,10 +41,10 @@ export default function QuoteForm({ service = 'sites', phone }) {
     submitQuote({ service, name, budget, brief })
   }
 
-  // Escape hatch: manda "oi" direto no WhatsApp, sem preencher nada — mas ainda
-  // conta como Lead (é clique de alta intenção num CTA de orçamento).
+  // Escape hatch: manda "oi" direto no WhatsApp, sem preencher nada. Continua
+  // contando como Lead + Contact porque é um <a> de WhatsApp — o listener global
+  // (PixelTracker) pega o clique.
   const directHref = waUrl(buildQuoteMessage({ service }), service)
-  const onDirect = () => fireLead({ service })
 
   return (
     <div className="mx-auto mt-9 max-w-[540px] text-left">
@@ -129,7 +129,6 @@ export default function QuoteForm({ service = 'sites', phone }) {
           href={directHref}
           target="_blank"
           rel="noopener noreferrer"
-          onClick={onDirect}
           className="font-util text-[12px] uppercase tracking-[0.14em] text-ash underline-offset-4 transition-colors hover:text-bone hover:underline"
         >
           ou só mandar um oi no WhatsApp

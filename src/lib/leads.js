@@ -12,6 +12,7 @@
 // Tudo à prova de bala: se o Pixel não carregou, os eventos viram no-op.
 
 import { lead as pixelLead, contact as pixelContact } from './pixel'
+import { newEventId } from './metaIdentity'
 import { SITES_WHATSAPP, MOTION_WHATSAPP } from '../data/screens'
 
 // ── Valor proxy do lead (BRL) ───────────────────────────────────────────────
@@ -62,26 +63,70 @@ export function buildQuoteMessage({ service = 'sites', name, budget, brief } = {
   return lines.join('\n')
 }
 
-// Dispara os eventos de conversão de lead. Chamado no clique/submit de alta
-// intenção — NÃO no PageView nem em clique qualquer (isso o listener global já faz).
-export function fireLead({ service = 'sites', name, budget, contentName } = {}) {
-  const params = {
-    content_name: contentName || SERVICE_LABEL[service] || service,
-    content_category: service,
-    value: LEAD_VALUE[service] ?? 0,
-    currency: 'BRL',
-  }
-  pixelLead(params)
-  // Contact reforça o sinal de contato (o listener global também pega, mas aqui
-  // garantimos o método correto mesmo se o clique não passar por um <a>).
-  pixelContact({ contact_method: 'whatsapp', content_category: service })
-  return params
+// Descobre o serviço de um clique de WhatsApp. A rota manda (em /motion todo
+// lead é motion; em /sites, sites); fora dos serviços, cai no número do link.
+export function resolveService({ href = '', pathname = '' } = {}) {
+  if (pathname.startsWith('/motion')) return 'motion'
+  if (pathname.startsWith('/sites')) return 'sites'
+  const digits = String(href).replace(/\D+/g, '')
+  if (digits.includes(MOTION_WHATSAPP)) return 'motion'
+  return 'sites'
 }
 
-// Fluxo completo do formulário de orçamento: dispara Lead e abre o WhatsApp com a
-// mensagem qualificada. Retorna a URL (útil pra testes/telemetria).
+// Dedup de Lead por serviço por sessão da aba: a mesma pessoa clicando no
+// WhatsApp 3x na visita não vira 3 Leads — o primeiro conta como Lead, os
+// próximos só como Contact. Mantém a contagem de Lead honesta.
+const leadFired = new Set()
+function alreadyLeaded(service) {
+  if (leadFired.has(service)) return true
+  leadFired.add(service)
+  try {
+    const k = `culto:lead:${service}`
+    if (sessionStorage.getItem(k)) return true
+    sessionStorage.setItem(k, '1')
+  } catch {
+    /* sessionStorage indisponível — usa só o Set em memória */
+  }
+  return false
+}
+
+// Dispara SÓ o Lead (com valor). O Contact é separado (fireContact) pra não
+// contar duas vezes quando o clique também é pego pelo listener global. Devolve
+// o eventID pra você reusar no Lead server-side (Conversions API).
+export function fireLead({ service = 'sites', contentName, force = false } = {}) {
+  if (!force && alreadyLeaded(service)) return null
+  const eventId = newEventId('lead')
+  pixelLead(
+    {
+      content_name: contentName || SERVICE_LABEL[service] || service,
+      content_category: service,
+      value: LEAD_VALUE[service] ?? 0,
+      currency: 'BRL',
+    },
+    // eventID entra pra deduplicar com o CAPI (o track já aceita options).
+    { eventID: eventId },
+  )
+  return eventId
+}
+
+// Dispara SÓ o Contact. O listener global chama isto nos cliques de <a> de
+// WhatsApp/telefone; o formulário chama direto (abre o WhatsApp via window.open,
+// que o listener não pega).
+export function fireContact({ method = 'whatsapp', service } = {}) {
+  pixelContact({
+    contact_method: method,
+    ...(service ? { content_category: service } : {}),
+    source_url: typeof window !== 'undefined' ? window.location.pathname : undefined,
+  })
+}
+
+// Fluxo completo do formulário de orçamento: dispara Lead + Contact e abre o
+// WhatsApp com a mensagem qualificada. O submit é um <button> que chama
+// window.open — o listener global NÃO pega esse clique, então a gente dispara os
+// dois eventos aqui na mão. Retorna a URL (útil pra testes/telemetria).
 export function submitQuote({ service = 'sites', name, budget, brief } = {}) {
-  fireLead({ service, name, budget })
+  fireLead({ service })
+  fireContact({ method: 'whatsapp', service })
   const message = buildQuoteMessage({ service, name, budget, brief })
   const url = waUrl(message, service)
   if (typeof window !== 'undefined') window.open(url, '_blank', 'noopener,noreferrer')

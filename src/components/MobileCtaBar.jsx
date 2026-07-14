@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion, useMotionValueEvent, useScroll } from 'framer-motion'
-import { waUrl, buildQuoteMessage, fireLead } from '../lib/leads'
+import { waUrl, buildQuoteMessage } from '../lib/leads'
 
 /*
  * Barra de ação fixa no rodapé — SÓ no mobile.
@@ -42,7 +42,6 @@ export default function MobileCtaBar({ variant = 'packs', showAfter = 560, hideN
   const visible = pastHero && !nearBottom
   const isService = variant === 'sites' || variant === 'motion'
 
-  const onWhats = () => fireLead({ service: variant })
   const whatsHref = isService ? waUrl(buildQuoteMessage({ service: variant }), variant) : '#'
 
   return (
@@ -69,7 +68,6 @@ export default function MobileCtaBar({ variant = 'packs', showAfter = 560, hideN
                   href={whatsHref}
                   target="_blank"
                   rel="noopener noreferrer"
-                  onClick={onWhats}
                   className="font-util flex flex-1 items-center justify-center gap-2 border border-transparent bg-blood px-4 py-3 text-[13px] font-semibold uppercase tracking-[0.12em] text-bone transition-colors hover:bg-blood-2"
                 >
                   Chamar no WhatsApp ↗

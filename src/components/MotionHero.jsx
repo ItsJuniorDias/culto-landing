@@ -6,7 +6,6 @@ import { Halftone } from './Decor'
 import { EASE } from '../lib/motion'
 import { motionHero } from '../data/screens'
 import { waLink } from '../data/content'
-import { fireLead } from '../lib/leads'
 
 /* Barrinhas de waveform pra trilha de áudio — alturas pseudo-aleatórias mas
    estáveis (memo) pra não "tremer" a cada render. */
@@ -173,7 +172,7 @@ export default function MotionHero() {
         </motion.p>
 
         <motion.div {...rise(0.54)} className="mt-8 flex flex-wrap justify-center gap-3.5">
-          <Button href={waLink(s.primary.quote, s.whatsapp)} target="_blank" rel="noopener noreferrer" onClick={() => fireLead({ service: 'motion' })}>
+          <Button href={waLink(s.primary.quote, s.whatsapp)} target="_blank" rel="noopener noreferrer">
             {s.primary.label} ↗
           </Button>
           <Button href={s.secondary.href} variant="ghost">
