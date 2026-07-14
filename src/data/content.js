@@ -223,12 +223,14 @@ export const reel = {
 // Mesma lógica do `reel`:
 //   A) YouTube  → preencha `youtubeId` (ex.: youtu.be/AbC123 → 'AbC123')
 //   B) Próprio  → deixe youtubeId: null e aponte `src` p/ um .mp4 em /public/assets
-// `poster` é a capa mostrada antes do play (ideal 16:9, ex.: 1280×720).
+// `poster` é a capa mostrada antes do play. `vertical: true` avisa a moldura que a
+// peça é retrato (9:16) → o vídeo entra centralizado com fundo borrado, sem corte.
 export const motionPreview = {
-  youtubeId: "ScMzIvxBSi4", // ← troque pelo id do seu reel no YouTube
-  src: null, // ← ou "/assets/motion-preview.mp4" p/ vídeo próprio
-  poster: "/assets/kids-space-02.jpg", // ← troque pela sua capa 16:9
-  duration: "0:18",
+  youtubeId: null, // ← usa o vídeo próprio (não o placeholder do YouTube)
+  src: "/assets/promo-motion.mp4", // ← mesmo promo do showreel
+  poster: "/assets/promo-motion-poster.jpg", // ← capa (1º frame, 464×832)
+  vertical: true, // ← peça em retrato (9:16) → moldura trata o letterbox
+  duration: "0:28",
   label: "Reel",
 };
 

@@ -50,8 +50,19 @@ function MotionPreview({ media }) {
     ? `https://www.youtube-nocookie.com/embed/${media.youtubeId}?autoplay=1&rel=0&modestbranding=1&playsinline=1`
     : null
 
+  // Peça retrato (9:16): um fundo borrado da própria capa preenche a moldura
+  // horizontal, pra o vídeo entrar inteiro (object-contain) sem faixa preta.
+  const isVertical = !!media.vertical
+  const blurFill = isVertical ? (
+    <img
+      src={media.poster}
+      aria-hidden="true"
+      className="absolute inset-0 h-full w-full scale-110 object-cover opacity-40 blur-2xl"
+    />
+  ) : null
+
   return (
-    <div className="group/vid relative aspect-video overflow-hidden border border-line bg-ink lg:aspect-auto lg:h-full lg:min-h-[300px]">
+    <div className="group/vid relative aspect-[4/5] overflow-hidden border border-line bg-ink lg:aspect-auto lg:h-full lg:min-h-[340px]">
       {/* barra de destaque que corre no topo no hover (igual ao showreel) */}
       {!playing && (
         <span
@@ -71,14 +82,19 @@ function MotionPreview({ media }) {
             allowFullScreen
           />
         ) : (
-          <video
-            className="absolute inset-0 h-full w-full bg-ink object-cover"
-            src={media.src}
-            poster={media.poster}
-            controls
-            autoPlay
-            playsInline
-          />
+          <>
+            {blurFill}
+            <video
+              className={`absolute inset-0 h-full w-full ${
+                isVertical ? "object-contain" : "bg-ink object-cover"
+              }`}
+              src={media.src}
+              poster={media.poster}
+              controls
+              autoPlay
+              playsInline
+            />
+          </>
         )
       ) : (
         <button
@@ -87,10 +103,13 @@ function MotionPreview({ media }) {
           aria-label="Reproduzir o preview de motion"
           className="absolute inset-0 h-full w-full cursor-pointer"
         >
+          {blurFill}
           <img
             src={media.poster}
             alt="Capa do preview de motion"
-            className="absolute inset-0 h-full w-full object-cover opacity-80 transition-[transform,opacity] duration-700 group-hover/vid:scale-[1.03] group-hover/vid:opacity-100"
+            className={`absolute inset-0 h-full w-full opacity-80 transition-[transform,opacity] duration-700 group-hover/vid:scale-[1.03] group-hover/vid:opacity-100 ${
+              isVertical ? "object-contain" : "object-cover"
+            }`}
             loading="lazy"
           />
           {/* escurecimento pra o botão ler em qualquer frame */}
