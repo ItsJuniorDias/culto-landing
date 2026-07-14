@@ -102,11 +102,9 @@ export default function PackDetail() {
 
   const handleBuy = () => {
     addToCart(packParams(pack))
-    if (!user) {
-      // Precisa estar logado para a compra ficar atrelada à conta.
-      navigate('/login', { state: { from: `/checkout/${pack.id}` } })
-      return
-    }
+    // Checkout como convidado: nada de parede de login antes de comprar. O
+    // e-mail é coletado no próprio checkout e o link de download vai por e-mail.
+    // Forçar cadastro aqui era o maior ralo de conversão da loja.
     navigate(`/checkout/${pack.id}`)
   }
 

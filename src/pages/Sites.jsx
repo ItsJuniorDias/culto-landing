@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import SiteHeader from '../components/SiteHeader'
 import SitesHero from '../components/SitesHero'
 import SectionHead from '../components/SectionHead'
@@ -5,20 +6,36 @@ import SitesShowcase from '../components/SitesShowcase'
 import Process from '../components/Process'
 import Capabilities from '../components/Capabilities'
 import ServiceTiers from '../components/ServiceTiers'
+import ProofStrip from '../components/ProofStrip'
 import Faq from '../components/Faq'
 import ServiceCta from '../components/ServiceCta'
 import ServicesCrossLink from '../components/ServicesCrossLink'
+import MobileCtaBar from '../components/MobileCtaBar'
 import Footer from '../components/Footer'
 import { Halftone } from '../components/Decor'
 import { siteTiers, waLink } from '../data/content'
-import { sitesProcess, sitesCapabilities, sitesFaqs, serviceCta } from '../data/screens'
+import { sitesProcess, sitesCapabilities, sitesFaqs, sitesProof, serviceCta, pageMeta } from '../data/screens'
+import { useDocumentMeta } from '../lib/useDocumentMeta'
+import { viewContent } from '../lib/pixel'
 
 /*
  * Tela SITES — focada na construção de sites sob medida.
  * Herói com mock de navegador → prova real (Pedagogy) → processo → o que vem
- * incluso → planos → dúvidas → CTA de orçamento → ponte pras outras telas.
+ * incluso → garantias (quebra de objeção) → planos → dúvidas → CTA de orçamento
+ * (formulário) → ponte pras outras telas. Barra fixa de WhatsApp no mobile.
  */
 export default function Sites() {
+  useDocumentMeta(pageMeta.sites)
+
+  // ViewContent da página de serviço → alimenta público e otimização da campanha.
+  useEffect(() => {
+    viewContent({
+      content_name: 'Criação de sites',
+      content_category: 'sites',
+      content_type: 'service',
+    })
+  }, [])
+
   return (
     <>
       <SiteHeader
@@ -74,6 +91,9 @@ export default function Sites() {
           items={sitesCapabilities}
         />
 
+        {/* quebra de objeção logo antes do preço */}
+        <ProofStrip items={sitesProof} />
+
         <ServiceTiers
           id="planos"
           eyebrow="Planos"
@@ -101,10 +121,11 @@ export default function Sites() {
           }
         />
 
-        <ServiceCta config={serviceCta.sites} />
+        <ServiceCta config={serviceCta.sites} service="sites" />
         <ServicesCrossLink current="sites" />
       </main>
       <Footer />
+      <MobileCtaBar variant="sites" />
     </>
   )
 }

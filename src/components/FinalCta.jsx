@@ -33,7 +33,7 @@ export default function FinalCta() {
           </p>
 
           <div className="relative z-[2] flex flex-wrap justify-center gap-3.5">
-            <Button to="/login">Garantir o Bundle ↗</Button>
+            <Button to="/pack/bundle">Garantir o Bundle ↗</Button>
             <Button href="#inside" variant="ghost">
               Ver o catálogo
             </Button>

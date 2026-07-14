@@ -218,7 +218,7 @@ export default function Checkout() {
   // (pack pago, usuário logado e ainda não comprado). Os returns de Navigate
   // abaixo evitam telas inválidas, então checamos as mesmas condições aqui.
   const initiated = useRef(false);
-  const canCheckout = !!pack && !pack.free && !!user && !ownsPack(pack.id);
+  const canCheckout = !!pack && !pack.free && !ownsPack(pack.id);
   useEffect(() => {
     if (canCheckout && !initiated.current) {
       initiated.current = true;
@@ -258,10 +258,7 @@ export default function Checkout() {
   // ── Guards ──
   if (!pack) return <Navigate to="/" replace />;
   if (pack.free) return <Navigate to={`/pack/${pack.id}`} replace />;
-  if (!user)
-    return (
-      <Navigate to="/login" state={{ from: `/checkout/${pack.id}` }} replace />
-    );
+  // Checkout liberado pra convidado: não redireciona mais pro /login.
   if (ownsPack(pack.id)) return <Navigate to={`/pack/${pack.id}`} replace />;
 
   // ── Handlers ──
@@ -433,6 +430,18 @@ export default function Checkout() {
             <h1 className="font-display mt-3 text-[44px] font-black leading-[0.9] sm:text-[54px]">
               Finalizar compra
             </h1>
+            {!user && (
+              <p className="font-util mt-3 text-[12px] uppercase tracking-[0.12em] text-faint">
+                Compra sem cadastro · o download vai pro seu e-mail ·{" "}
+                <Link
+                  to="/login"
+                  state={{ from: `/checkout/${pack.id}` }}
+                  className="text-ash underline-offset-4 transition-colors hover:text-bone hover:underline"
+                >
+                  já tenho conta
+                </Link>
+              </p>
+            )}
           </motion.div>
 
           {/* resumo recolhível — mobile */}

@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import SiteHeader from '../components/SiteHeader'
 import MotionHero from '../components/MotionHero'
@@ -5,13 +6,17 @@ import Reel from '../components/Reel'
 import ServiceTiers from '../components/ServiceTiers'
 import Timeline from '../components/Timeline'
 import Process from '../components/Process'
+import ProofStrip from '../components/ProofStrip'
 import SectionHead from '../components/SectionHead'
 import Faq from '../components/Faq'
 import ServiceCta from '../components/ServiceCta'
 import ServicesCrossLink from '../components/ServicesCrossLink'
+import MobileCtaBar from '../components/MobileCtaBar'
 import Footer from '../components/Footer'
 import { motionTiers, waLink } from '../data/content'
-import { motionProcess, motionDeliverables, motionFaqs, serviceCta, MOTION_WHATSAPP } from '../data/screens'
+import { motionProcess, motionDeliverables, motionFaqs, motionProof, serviceCta, pageMeta, MOTION_WHATSAPP } from '../data/screens'
+import { useDocumentMeta } from '../lib/useDocumentMeta'
+import { viewContent } from '../lib/pixel'
 import { fadeUp, staggerContainer, viewportOnce } from '../lib/motion'
 
 /* Faixa de formatos de entrega — chips numa moldura escura. */
@@ -59,10 +64,21 @@ function Deliverables() {
 
 /*
  * Tela MOTION — focada na construção de vídeo & motion.
- * Herói com timeline de editor → showreel rodando → planos (com a barra de
- * timeline em cada card) → processo → formatos de entrega → dúvidas → CTA.
+ * Herói com timeline de editor → showreel rodando → planos → processo →
+ * formatos de entrega → garantias (quebra de objeção) → dúvidas → CTA de
+ * orçamento (formulário). Barra fixa de WhatsApp no mobile.
  */
 export default function Motion() {
+  useDocumentMeta(pageMeta.motion)
+
+  useEffect(() => {
+    viewContent({
+      content_name: 'Vídeo & motion',
+      content_category: 'motion',
+      content_type: 'service',
+    })
+  }, [])
+
   return (
     <>
       <SiteHeader
@@ -106,6 +122,9 @@ export default function Motion() {
 
         <Deliverables />
 
+        {/* quebra de objeção antes do fechamento */}
+        <ProofStrip items={motionProof} />
+
         <Faq
           items={motionFaqs}
           eyebrow="Dúvidas de vídeo"
@@ -118,10 +137,11 @@ export default function Motion() {
           }
         />
 
-        <ServiceCta config={serviceCta.motion} />
+        <ServiceCta config={serviceCta.motion} service="motion" />
         <ServicesCrossLink current="motion" />
       </main>
       <Footer />
+      <MobileCtaBar variant="motion" />
     </>
   )
 }

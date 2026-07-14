@@ -9,6 +9,7 @@ import Voices from "../components/Voices";
 import Faq from "../components/Faq";
 import ServicesCrossLink from "../components/ServicesCrossLink";
 import FinalCta from "../components/FinalCta";
+import MobileCtaBar from "../components/MobileCtaBar";
 import Footer from "../components/Footer";
 
 /*
@@ -34,6 +35,7 @@ export default function Landing() {
         <FinalCta />
       </main>
       <Footer />
+      <MobileCtaBar variant="packs" />
     </>
   );
 }

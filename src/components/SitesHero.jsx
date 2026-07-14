@@ -5,6 +5,7 @@ import { Halftone, Rays } from './Decor'
 import { EASE } from '../lib/motion'
 import { sitesHero } from '../data/screens'
 import { waLink } from '../data/content'
+import { fireLead } from '../lib/leads'
 
 /* Assinatura da tela de sites: um navegador escuro, na identidade do Culto,
    cujos blocos "se montam" no load — um site construindo um site. Sob
@@ -153,7 +154,7 @@ export default function SitesHero() {
           </motion.p>
 
           <motion.div {...rise(0.54)} className="mt-8 flex flex-wrap gap-3.5">
-            <Button href={waLink(s.primary.quote)} target="_blank" rel="noopener noreferrer">
+            <Button href={waLink(s.primary.quote)} target="_blank" rel="noopener noreferrer" onClick={() => fireLead({ service: 'sites' })}>
               {s.primary.label} ↗
             </Button>
             <Button href={s.secondary.href} variant="ghost">

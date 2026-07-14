@@ -199,3 +199,34 @@ export const serviceCta = {
     phone: { display: '(21) 98666-7966', tel: '+5521986667966', whatsapp: MOTION_WHATSAPP },
   },
 }
+
+// ── Faixa de quebra de objeção (ProofStrip) por serviço ─────────────────────
+// Tudo aqui é VERDADE — não é depoimento inventado, é garantia real que remove
+// o medo de pedir orçamento.
+export const sitesProof = [
+  { t: 'Orçamento em 24h', d: 'Escopo e prazo por escrito, sem enrolação.' },
+  { t: '50% só na entrega', d: 'Metade pra começar, metade quando estiver no ar.' },
+  { t: 'Você é dono de tudo', d: 'Código, domínio e hospedagem no seu nome.' },
+  { t: 'Nota fiscal', d: 'Emitida certinho, sem mensalidade escondida.' },
+]
+
+export const motionProof = [
+  { t: 'Orçamento em 24h', d: 'Prazo e formato fechados antes de aprovar.' },
+  { t: 'Trilha licenciada', d: 'Sem risco de takedown por direito autoral.' },
+  { t: 'Todos os cortes', d: '9:16, 1:1 e 16:9 — um render, cada canal.' },
+  { t: 'Fala direto comigo', d: 'Sem robô, sem intermediário. Eu que animo.' },
+]
+
+// ── SEO: título e descrição por rota (SPA sem SSR) ──────────────────────────
+export const pageMeta = {
+  sites: {
+    title: 'Criação de sites sob medida — CULTO',
+    description:
+      'Sites codados do zero pra sua marca: design exclusivo, animação de estúdio e performance real. Orçamento em 24h no WhatsApp, com nota fiscal.',
+  },
+  motion: {
+    title: 'Vídeo & motion sob encomenda — CULTO',
+    description:
+      'Motion feito à mão em After Effects: do reels vertical ao explainer de produto, com trilha, som e color. A partir de R$ 60/segundo. Orçamento em 24h.',
+  },
+}
