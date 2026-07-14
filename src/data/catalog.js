@@ -63,8 +63,8 @@ export const catalog = [
     file: "/downloads/kids-learning-pack.zip",
     fileName: "design-pack.zip",
     free: false,
-    price: "R$ 197",
-    priceValue: 197,
+    price: "R$ 17,90",
+    priceValue: 17.90,
   },
   {
     id: "bundle",
@@ -88,8 +88,8 @@ export const catalog = [
     file: "/downloads/kids-learning-pack.zip",
     fileName: "bundle-completo.zip",
     free: false,
-    price: "R$ 397",
-    priceValue: 397,
+    price: "R$ 36,90",
+    priceValue: 36.90,
     featured: true,
   },
   {
@@ -114,8 +114,8 @@ export const catalog = [
     file: "/downloads/kids-learning-pack.zip",
     fileName: "motion-pack.zip",
     free: false,
-    price: "R$ 247",
-    priceValue: 247,
+    price: "R$ 22,90",
+    priceValue: 22.90,
   },
 ];
 

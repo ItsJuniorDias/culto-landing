@@ -80,7 +80,7 @@ export default function MobileCtaBar({ variant = 'packs', showAfter = 560, hideN
                     A partir de
                   </div>
                   <div className="font-display text-[20px] font-black leading-none text-bone">
-                    R$ 197
+                    R$ 17,90
                   </div>
                 </div>
                 <a

@@ -23,7 +23,7 @@ import { SITES_WHATSAPP, MOTION_WHATSAPP } from '../data/screens'
 // AJUSTE conforme seus números reais forem aparecendo.
 export const LEAD_VALUE = {
   sites: 600, // ticket médio alto (landing 2.9k → sistema 14.9k)
-  motion: 350, // reels 1.2k → campanha 8.9k
+  motion: 120, // ticket de entrada (reels 297 → campanha a partir de 1.9k)
 }
 
 // Origem do serviço → número de WhatsApp certo.
@@ -143,9 +143,9 @@ export const BUDGET_OPTIONS = {
     'Ainda não sei',
   ],
   motion: [
-    'Social / Reels (a partir de R$ 1.200)',
-    'Explainer / Promo (a partir de R$ 3.900)',
-    'Campanha / Marca (a partir de R$ 8.900)',
+    'Social / Reels (a partir de R$ 297)',
+    'Explainer / Promo (a partir de R$ 797)',
+    'Campanha / Marca (a partir de R$ 1.997)',
     'Ainda não sei',
   ],
 }
