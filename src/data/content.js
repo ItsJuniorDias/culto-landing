@@ -188,9 +188,9 @@ export const navLinks = [
 //   whatsapp → seu número com DDI + DDD, só dígitos. Ex.: 5519998877665
 //   email    → seu e-mail de contato
 export const contact = {
-  whatsapp: "5517991115745", // DDI + DDD + número, só dígitos
-  phone: "+5517991115745", // mesmo número, formato tel:
-  phoneDisplay: "(17) 99111-5745", // como aparece na tela
+  whatsapp: "5521986667966", // DDI + DDD + número, só dígitos
+  phone: "+5521986667966", // mesmo número, formato tel:
+  phoneDisplay: "(21) 98666-7966", // como aparece na tela
   email: "contato@cultododesigner.com.br", // ← TROQUE pelo seu e-mail
 };
 
