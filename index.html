@@ -90,11 +90,7 @@
         } catch (e) {}
       })()
 
-      // Todos os pixels do site. Manter em sincronia com PIXEL_IDS em src/lib/pixel.js.
-      // Com mais de um `init`, cada `fbq('track', ...)` sai pra todos os pixels.
-      ;['4131814847110778', '1655296046187816'].forEach(function (id) {
-        fbq('init', id, window.__CULTO_XID__ ? { external_id: window.__CULTO_XID__ } : {})
-      })
+      fbq('init', '1655296046187816', window.__CULTO_XID__ ? { external_id: window.__CULTO_XID__ } : {})
       fbq('track', 'PageView')
     </script>
     <!-- End Meta Pixel Code -->
@@ -102,13 +98,6 @@
   <body>
     <!-- Meta Pixel (noscript fallback) -->
     <noscript>
-      <img
-        height="1"
-        width="1"
-        style="display: none"
-        src="https://www.facebook.com/tr?id=4131814847110778&ev=PageView&noscript=1"
-        alt=""
-      />
       <img
         height="1"
         width="1"
