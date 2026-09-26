@@ -7,7 +7,10 @@
 // Tudo é à prova de bala: se o script do Pixel não carregou (adblock, dev sem
 // rede, SSR), as chamadas viram no-op e NUNCA derrubam a página.
 
-export const PIXEL_ID = '4131814847110778'
+// Todos os pixels do site (mesma lista do index.html). O `init` de cada um já
+// acontece lá; `track` sem ID específico sai pra todos eles.
+export const PIXEL_IDS = ['4131814847110778', '1655296046187816']
+export const PIXEL_ID = PIXEL_IDS[0]
 
 import { getOrCreateExternalId, newEventId, captureFbc } from './metaIdentity'
 
@@ -74,7 +77,7 @@ export function identify({ email, phone, firstName, lastName } = {}) {
   const key = JSON.stringify(data)
   if (!Object.keys(data).length || key === lastIdentity) return // nada novo
   lastIdentity = key
-  fbq('init', PIXEL_ID, data)
+  PIXEL_IDS.forEach((id) => fbq('init', id, data))
 }
 
 // Monta os parâmetros de produto a partir de um pack do catálogo. Inclui o
